@@ -8,16 +8,14 @@ import { doc, getDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import Header from '@/components/Header';
 import { useLanguage } from '@/lib/context/LanguageContext';
-import { setAuthCookie } from '@/lib/firebase/auth';
 
 export default function Home() {
   const { t } = useLanguage();
   const [user, setUser] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  
   const router = useRouter();
-  
+
   useEffect(() => {
     const checkAuth = async () => {
       const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -27,17 +25,14 @@ export default function Home() {
         }
         setLoading(false);
       });
-      
       return () => unsubscribe();
     };
-    
     checkAuth();
   }, []);
-  
+
   const fetchUserProfile = async (userId: string) => {
     try {
       const userDoc = await getDoc(doc(db, 'users', userId));
-      
       if (userDoc.exists()) {
         setUserProfile(userDoc.data());
       }
@@ -45,24 +40,25 @@ export default function Home() {
       console.error('Kullanıcı bilgileri alınamadı:', err);
     }
   };
-  
+
   const handleLogout = async () => {
     try {
       await signOut(auth);
       setUser(null);
       setUserProfile(null);
+      router.push('/');
     } catch (err) {
       console.error('Çıkış yapılamadı:', err);
     }
   };
   
-  const navigateToUserPanel = async (userProfile) => {
+  const navigateToUserPanel = (userProfile: any) => {
     if (!userProfile) return;
     
     let redirectPath = '/';
     switch (userProfile.role) {
       case 'admin':
-        redirectPath = '/admin-panel';
+        redirectPath = '/dashboard';
         break;
       case 'teacher':
         redirectPath = '/teacher-panel';
@@ -77,20 +73,7 @@ export default function Home() {
         redirectPath = '/';
     }
     
-    try {
-      // Auth cookie'yi ayarla
-      await setAuthCookie({
-        uid: userProfile.uid,
-        role: userProfile.role
-      });
-      
-      // Cookie ayarlandıktan sonra yönlendir
-      window.location.href = redirectPath;
-    } catch (error) {
-      console.error('Cookie ayarlanırken hata:', error);
-      // Hata durumunda da yönlendir
-      window.location.href = redirectPath;
-    }
+    router.push(redirectPath);
   };
   
   const renderProfileButton = () => {
@@ -142,204 +125,242 @@ export default function Home() {
       </div>
     );
   }
-  
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       
       {/* Hero Section */}
-      <div className="container mx-auto px-4 py-16 md:py-24">
-        <div className="flex flex-col md:flex-row items-center">
-          <div className="md:w-1/2 mb-10 md:mb-0">
+      <div className="pt-32 pb-16 md:pt-40 md:pb-24">
+        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center gap-10">
+          <div className="text-center max-w-3xl mx-auto md:text-left md:max-w-xl md:mx-0 flex-1">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-              SpeakNest ile İngilizce Konuşmayı Öğrenin
+              İngilizce Konuşma ve Kelime Öğrenme Platformu
             </h1>
             <p className="text-lg text-gray-600 mb-8">
-              Profesyonel eğitmenlerle birebir konuşma pratiği yaparak İngilizce konuşma becerilerinizi hızla geliştirin. Her seviyeye uygun dersler ve esnek program.
+              SpeakNest ile anadili İngilizce olan eğitmenlerle konuşma pratiği yapın ve bilimsel metodlarla kelime öğrenin.
             </p>
-            
-            {user ? (
-              <button
-                onClick={() => navigateToUserPanel(userProfile)}
-                className="px-6 py-3 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition-colors text-lg"
-              >
-                Derslerime Git
-              </button>
-            ) : (
-              <Link
-                href="/register"
-                className="px-6 py-3 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition-colors text-lg"
-              >
-                {t('register')}
-              </Link>
-            )}
-          </div>
-          
-          <div className="md:w-1/2 md:pl-10">
-            <div className="bg-white p-6 rounded-lg shadow-xl border-t-4 border-green-500">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-4">SpeakNest Avantajları</h2>
-              
-              <div className="space-y-4">
-                <div className="flex items-start">
-                  <div className="flex-shrink-0 bg-green-100 p-2 rounded-full text-green-600 mr-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-800">Anadili İngilizce Olan Eğitmenler</h3>
-                    <p className="text-gray-600">Gerçek hayatta kullanılan güncel İngilizce ile pratik yapma imkanı</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start">
-                  <div className="flex-shrink-0 bg-green-100 p-2 rounded-full text-green-600 mr-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-800">Esnek Program</h3>
-                    <p className="text-gray-600">Size uygun saatlerde, istediğiniz yerde online dersler</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start">
-                  <div className="flex-shrink-0 bg-green-100 p-2 rounded-full text-green-600 mr-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-800">Kişiselleştirilmiş Eğitim</h3>
-                    <p className="text-gray-600">Seviyenize ve ihtiyaçlarınıza özel ders programı</p>
-                  </div>
-                </div>
-              </div>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+              {user ? (
+                <Link
+                  href="/student-panel/dashboard"
+                  className="px-8 py-3 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition-colors text-lg font-medium"
+                >
+                  Derslerime Git
+                </Link>
+              ) : (
+                <Link
+                  href="/register"
+                  className="px-8 py-3 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition-colors text-lg font-medium"
+                >
+                  Hemen Başla
+                </Link>
+              )}
             </div>
+          </div>
+          <div className="flex-1 flex justify-center md:justify-end">
+            <img
+              src="/images/homepage_hero_illustration_for_a_modern_language_learning_platform_soft_green_color_palette_minimal_teklhgamgsi16zbt6zux_0.png"
+              alt="Hero Görseli"
+              className="w-full max-w-md rounded-xl shadow-lg"
+            />
           </div>
         </div>
       </div>
-      
-      {/* Course Categories */}
-      <div className="bg-gray-100 py-16">
+
+      {/* Features Section */}
+      <div className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">Eğitim Paketlerimiz</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="bg-white rounded-lg shadow overflow-hidden transform transition-transform hover:scale-105">
-              <div className="h-48 bg-yellow-200 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-                </svg>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold mb-2 text-gray-800">{t('beginnerLevel')}</h3>
-                <p className="text-gray-600 mb-4">Temel İngilizce konuşma becerileri, günlük konuşmalar ve pratik dersler</p>
-                <Link href="/pricing" className="text-green-600 hover:underline font-medium">
-                  Fiyatlandırmayı İncele →
-                </Link>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-              <div className="h-48 bg-green-200 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold mb-2 text-gray-800">Profesyonel Paket</h3>
-                <p className="text-gray-600 mb-4">İş İngilizcesi, sunum teknikleri ve profesyonel iletişim becerileri</p>
-                <Link href="/pricing" className="text-green-600 hover:underline font-medium">
-                  Fiyatlandırmayı İncele →
-                </Link>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-              <div className="h-48 bg-purple-200 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                </svg>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold mb-2 text-gray-800">Premium Paket</h3>
-                <p className="text-gray-600 mb-4">Sınırsız ders, özel eğitmen ve kişiselleştirilmiş program</p>
-                <Link href="/pricing" className="text-green-600 hover:underline font-medium">
-                  Fiyatlandırmayı İncele →
-                </Link>
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            {/* Speaking Practice */}
+            <div className="space-y-6 flex items-start">
+              <img
+                src="/images/homepage_hero_illustration_for_a_modern_language_learning_platform_soft_green_color_palette_minimal_oqb01o9l6rcglswonop4_2.png"
+                alt="Konuşma Pratiği Görseli"
+                className="w-24 h-24 object-contain mr-6 hidden md:block"
+              />
+              <div>
+                <div className="flex items-center space-x-4">
+                  <div className="bg-green-100 p-3 rounded-full">
+                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900">Anadili İngilizce Olanlarla Konuşma Pratiği</h2>
+                </div>
+                <p className="text-gray-600 mt-4">
+                  Profesyonel eğitmenlerle birebir konuşma pratiği yaparak İngilizce konuşma becerilerinizi geliştirin. 
+                  Gerçek hayatta kullanılan güncel İngilizce ile pratik yapma imkanı.
+                </p>
+                <ul className="space-y-3 mt-4">
+                  <li className="flex items-center space-x-2">
+                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Birebir dersler</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Esnek program</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Anadili İngilizce olan eğitmenler</span>
+                  </li>
+                </ul>
               </div>
             </div>
-          </div>
-          
-          <div className="text-center mt-12">
-            <Link
-              href="/pricing"
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
-            >
-              Tüm Paketleri İncele
-            </Link>
+
+            {/* Vocabulary Learning */}
+            <div className="space-y-6 flex items-start">
+              <img
+                src="/images/openart-image_wkhjsl34_1745756262406_raw.jpg"
+                alt="Kelime Öğrenme Görseli"
+                className="w-24 h-24 object-contain mr-6 hidden md:block rounded-lg"
+              />
+              <div>
+                <div className="flex items-center space-x-4">
+                  <div className="bg-green-100 p-3 rounded-full">
+                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900">Bilimsel Metodla Kelime Öğrenme</h2>
+                </div>
+                <p className="text-gray-600 mt-4">
+                  Spaced Repetition (Aralıklı Tekrar) sistemi ile kelimeleri kalıcı olarak öğrenin. 
+                  Yapay zeka destekli sistemimiz, öğrenme sürecinizi optimize eder.
+                </p>
+                <ul className="space-y-3 mt-4">
+                  <li className="flex items-center space-x-2">
+                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Spaced Repetition sistemi</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Yapay zeka destekli öğrenme</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Kişiselleştirilmiş kelime listeleri</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      
-      {/* Call to Action */}
-      <div className="bg-green-600 text-white py-16">
+
+      {/* How It Works */}
+      <div className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12">Nasıl Çalışır?</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
+              <img
+                src="/images/homepage_hero_illustration_for_a_modern_language_learning_platform_soft_green_color_palette_minimal_mnqngpyixixe3rka9dl4_2.png"
+                alt="Kayıt Ol Görseli"
+                className="w-16 h-16 object-contain mb-4"
+              />
+              <div className="text-4xl font-bold text-green-600 mb-4">1</div>
+              <h3 className="text-xl font-semibold mb-2">Kayıt Ol</h3>
+              <p className="text-gray-600">Hızlı ve kolay kayıt süreci ile hemen başlayın.</p>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
+              <img
+                src="/images/homepage_hero_illustration_for_a_modern_language_learning_platform_soft_green_color_palette_minimal_teklhgamgsi16zbt6zux_0.png"
+                alt="Seviye Belirleme Görseli"
+                className="w-16 h-16 object-contain mb-4"
+              />
+              <div className="text-4xl font-bold text-green-600 mb-4">2</div>
+              <h3 className="text-xl font-semibold mb-2">Seviyenizi Belirleyin</h3>
+              <p className="text-gray-600">Seviye tespit sınavı ile size uygun programı oluşturalım.</p>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
+              <img
+                src="/images/openart-image_wkhjsl34_1745756262406_raw.jpg"
+                alt="Öğrenmeye Başla Görseli"
+                className="w-16 h-16 object-contain mb-4 rounded-lg"
+              />
+              <div className="text-4xl font-bold text-green-600 mb-4">3</div>
+              <h3 className="text-xl font-semibold mb-2">Öğrenmeye Başlayın</h3>
+              <p className="text-gray-600">Konuşma pratiği ve kelime öğrenme programınıza başlayın.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* CTA Section */}
+      <div className="py-16 bg-green-600 text-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-6">Hemen Öğrenmeye Başlayın</h2>
-          <p className="text-xl mb-8 max-w-3xl mx-auto">
-            Kariyerinizde ilerlemeniz için ihtiyaç duyduğunuz tüm eğitimler bir tık uzağınızda. 
-            Sınırsız erişim ve güncel içeriklerle hemen öğrenmeye başlayın.
+          <h2 className="text-3xl font-bold mb-6">Hemen Başlayın</h2>
+          <p className="text-lg mb-8 max-w-2xl mx-auto">
+            İngilizce konuşma becerilerinizi geliştirin ve kelime dağarcığınızı genişletin.
           </p>
-          
-          {user ? (
-            <button
-              onClick={() => navigateToUserPanel(userProfile)}
-              className="px-8 py-4 bg-white text-green-700 rounded-lg shadow hover:bg-green-50 transition-colors text-lg font-medium"
-            >
-              Derslerime Git
-            </button>
-          ) : (
-            <Link
-              href="/register"
-              className="px-8 py-4 bg-white text-green-700 rounded-lg shadow hover:bg-green-50 transition-colors text-lg font-medium"
-            >
-              Şimdi Kaydol
-            </Link>
-          )}
+          <Link
+            href="/register"
+            className="inline-block px-8 py-3 bg-white text-green-600 rounded-lg shadow hover:bg-gray-100 transition-colors text-lg font-medium"
+          >
+            Ücretsiz Deneyin
+          </Link>
         </div>
       </div>
-      
+
       {/* Footer */}
-      <footer className="bg-gray-800 text-white py-8">
+      <footer className="bg-gray-900 text-gray-200 pt-12 pb-6 mt-12">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-6 md:mb-0">
-              <h2 className="text-2xl font-semibold">SpeakNest</h2>
-              <p className="mt-2 text-gray-400">© 2023 Tüm Hakları Saklıdır</p>
-            </div>
-            
-            <div className="flex space-x-8">
-              <div>
-                <h3 className="font-semibold mb-3">Hakkımızda</h3>
-                <ul className="space-y-2">
-                  <li><Link href="/about" className="text-gray-400 hover:text-white">Biz Kimiz</Link></li>
-                  <li><Link href="/teachers" className="text-gray-400 hover:text-white">Eğitmenlerimiz</Link></li>
-                  <li><Link href="/career" className="text-gray-400 hover:text-white">Kariyer</Link></li>
-                </ul>
+          <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-10">
+            {/* Logo ve açıklama */}
+            <div className="mb-8 md:mb-0 flex-1">
+              <div className="flex items-center mb-4">
+                <img src="/images/homepage_hero_illustration_for_a_modern_language_learning_platform_soft_green_color_palette_minimal_oqb01o9l6rcglswonop4_2.png" alt="SpeakNest Logo" className="w-10 h-10 rounded-lg mr-2" />
+                <span className="text-2xl font-bold text-green-400">SpeakNest</span>
               </div>
-              
-              <div>
-                <h3 className="font-semibold mb-3">Destek</h3>
-                <ul className="space-y-2">
-                  <li><Link href="/contact" className="text-gray-400 hover:text-white">İletişim</Link></li>
-                  <li><Link href="/faq" className="text-gray-400 hover:text-white">SSS</Link></li>
-                  <li><Link href="/help" className="text-gray-400 hover:text-white">Yardım Merkezi</Link></li>
-                </ul>
+              <p className="text-gray-400 max-w-xs">İngilizce konuşma pratiği ve kelime öğrenme için modern, güvenilir ve yenilikçi platform.</p>
+              <div className="flex space-x-4 mt-4">
+                <a href="#" aria-label="Instagram" className="hover:text-green-400 transition-colors">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect width="20" height="20" x="2" y="2" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                </a>
+                <a href="#" aria-label="Twitter" className="hover:text-green-400 transition-colors">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53A4.48 4.48 0 0 0 22.43.36a9.09 9.09 0 0 1-2.88 1.1A4.52 4.52 0 0 0 16.11 0c-2.5 0-4.52 2.02-4.52 4.52 0 .35.04.7.11 1.03A12.94 12.94 0 0 1 3.1.67a4.48 4.48 0 0 0-.61 2.27c0 1.56.8 2.93 2.02 3.74A4.48 4.48 0 0 1 2 6.13v.06c0 2.18 1.55 4 3.8 4.42a4.52 4.52 0 0 1-2.04.08c.58 1.8 2.26 3.11 4.25 3.15A9.05 9.05 0 0 1 2 19.54a12.8 12.8 0 0 0 6.95 2.04c8.34 0 12.9-6.91 12.9-12.9 0-.2 0-.39-.01-.58A9.22 9.22 0 0 0 23 3z"/></svg>
+                </a>
+                <a href="#" aria-label="LinkedIn" className="hover:text-green-400 transition-colors">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect width="20" height="20" x="2" y="2" rx="5"/><line x1="16" y1="11" x2="16" y2="16"/><line x1="8" y1="11" x2="8" y2="16"/><line x1="12" y1="8" x2="12" y2="16"/></svg>
+                </a>
               </div>
             </div>
+            {/* Linkler */}
+            <div className="flex-1 grid grid-cols-2 gap-8">
+              <div>
+                <h3 className="font-semibold mb-3 text-green-300">Hakkımızda</h3>
+                <ul className="space-y-2">
+                  <li><Link href="/about" className="text-gray-400 hover:text-white transition-colors">Biz Kimiz</Link></li>
+                  <li><Link href="/teachers" className="text-gray-400 hover:text-white transition-colors">Eğitmenlerimiz</Link></li>
+                  <li><Link href="/career" className="text-gray-400 hover:text-white transition-colors">Kariyer</Link></li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-semibold mb-3 text-green-300">Destek</h3>
+                <ul className="space-y-2">
+                  <li><Link href="/contact" className="text-gray-400 hover:text-white transition-colors">İletişim</Link></li>
+                  <li><Link href="/faq" className="text-gray-400 hover:text-white transition-colors">SSS</Link></li>
+                  <li><Link href="/help" className="text-gray-400 hover:text-white transition-colors">Yardım Merkezi</Link></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-gray-700 mt-10 pt-6 text-center text-gray-500 text-sm">
+            © 2024 SpeakNest. Tüm Hakları Saklıdır.
           </div>
         </div>
       </footer>

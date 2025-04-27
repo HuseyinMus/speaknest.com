@@ -51,7 +51,8 @@ export class RBACService {
     try {
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       if (userDoc.exists() && userDoc.data().role) {
-        return userDoc.data().role as UserRole;
+        const role = userDoc.data().role as string;
+        return Object.values(UserRole).includes(role) ? role as UserRole : UserRole.STUDENT;
       }
       return UserRole.STUDENT; // Varsayılan rol artık STUDENT
     } catch (error) {
@@ -62,8 +63,13 @@ export class RBACService {
   
   // Kullanıcının belirli bir izne sahip olup olmadığını kontrol etme
   public async hasPermission(user: User | null, permission: Permission): Promise<boolean> {
-    const role = await this.getUserRole(user);
-    return rolePermissions[role].includes(permission);
+    try {
+      const role = await this.getUserRole(user);
+      return rolePermissions[role]?.includes(permission) || false;
+    } catch (error) {
+      console.error('İzin kontrolü başarısız:', error);
+      return false;
+    }
   }
   
   // Belirli bir rolün izinlerini alma

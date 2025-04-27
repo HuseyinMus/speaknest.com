@@ -60,13 +60,28 @@ export function middleware(request: NextRequest) {
 
   // Auth cookie'sini kontrol et
   const authCookie = request.cookies.get('auth');
-  const userRole = authCookie ? JSON.parse(decodeURIComponent(authCookie.value)).role : null;
+  let userRole = null;
+
+  try {
+    if (authCookie) {
+      const authData = JSON.parse(decodeURIComponent(authCookie.value));
+      userRole = authData.role;
+    }
+  } catch (error) {
+    // Geçersiz cookie formatı
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
 
   // Kullanıcı giriş yapmamışsa login sayfasına yönlendir
-  if (!authCookie) {
+  if (!authCookie || !userRole) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('callbackUrl', encodeURIComponent(request.url));
     return NextResponse.redirect(loginUrl);
+  }
+
+  // Test sayfası için özel kontrol
+  if (path.startsWith('/test')) {
+    return NextResponse.next();
   }
 
   // Kullanıcı rolünü kontrol et
@@ -88,8 +103,7 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public folder
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.jpg$|.*\\.svg$).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 }; 

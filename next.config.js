@@ -10,7 +10,8 @@ const nextConfig = {
   images: {
     domains: ['lh3.googleusercontent.com'],
     unoptimized: true
-  }
+  },
+  swcMinify: false
 };
 
 module.exports = nextConfig; 
