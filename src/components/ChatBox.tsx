@@ -30,11 +30,15 @@ const ChatBox: React.FC<ChatBoxProps> = ({ roomId, isOpen = true }) => {
   useEffect(() => {
     if (!user) return;
 
+    let isComponentMounted = true;
+
     async function connectSocket() {
       try {
         await socketService.connect(userId, userName);
-        socketService.joinRoom(roomId, userId, userName);
-        setIsConnected(true);
+        await socketService.joinRoom(roomId, userId, userName);
+        if (isComponentMounted) {
+          setIsConnected(true);
+        }
         
         // Oda mesajlarını dinle
         socketService.on('newMessage', (data: Message) => {
@@ -44,29 +48,23 @@ const ChatBox: React.FC<ChatBoxProps> = ({ roomId, isOpen = true }) => {
         // Kullanıcı katılma olayını dinle
         socketService.on('userJoined', (data: any) => {
           // Sistem mesajı olarak ekle
-          setMessages(prev => [
-            ...prev, 
-            {
-              id: 'system',
-              message: `${data.userName} odaya katıldı`,
-              sender: 'Sistem',
-              timestamp: new Date(data.timestamp)
-            }
-          ]);
+          setMessages(prev => [...prev, {
+            id: Date.now().toString(),
+            message: `${data.userName} odaya katıldı`,
+            sender: 'system',
+            timestamp: new Date()
+          }]);
         });
 
         // Kullanıcı ayrılma olayını dinle
         socketService.on('userLeft', (data: any) => {
           // Sistem mesajı olarak ekle
-          setMessages(prev => [
-            ...prev, 
-            {
-              id: 'system',
-              message: `${data.userName} odadan ayrıldı`,
-              sender: 'Sistem',
-              timestamp: new Date(data.timestamp)
-            }
-          ]);
+          setMessages(prev => [...prev, {
+            id: Date.now().toString(),
+            message: `${data.userName} odadan ayrıldı`,
+            sender: 'system',
+            timestamp: new Date()
+          }]);
         });
       } catch (error) {
         console.error('Socket bağlantı hatası:', error);
@@ -75,16 +73,15 @@ const ChatBox: React.FC<ChatBoxProps> = ({ roomId, isOpen = true }) => {
 
     connectSocket();
 
-    // Cleanup
+    // Temizlik işlemleri
     return () => {
-      if (isConnected) {
-        socketService.leaveRoom(roomId, userId, userName);
-        socketService.off('newMessage');
-        socketService.off('userJoined');
-        socketService.off('userLeft');
-      }
+      isComponentMounted = false;
+      socketService.leaveRoom(roomId, userId, userName);
+      socketService.off('newMessage');
+      socketService.off('userJoined');
+      socketService.off('userLeft');
     };
-  }, [user, roomId]);
+  }, [user, roomId, userId, userName]);
 
   // Mesajların sonuna otomatik kaydır
   useEffect(() => {
