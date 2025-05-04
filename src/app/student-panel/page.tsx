@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { auth } from '@/lib/firebase/config';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { Menu, X, Home, MessageCircle, Users, FileText, User, BarChart, Clock, Settings, LogOut, BookOpen } from 'lucide-react';
 import { useLanguage } from '@/lib/context/LanguageContext';
@@ -22,14 +22,14 @@ interface UserProfile {
 export default function StudentPanel() {
   const { t } = useLanguage();
   const router = useRouter();
+  const pathname = usePathname();
   
   // Temel state'ler
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [error, setError] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('dashboard');
-  
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -82,12 +82,16 @@ export default function StudentPanel() {
     { id: 'settings', label: t('settings'), icon: <Settings size={18} />, url: '/student-panel/settings' },
   ];
   
-  // Geçerli aktif sekmeyi yönlendirmeden belirleyin
-  useEffect(() => {
-    const path = window.location.pathname;
-    const currentPath = path.split('/').pop() || 'dashboard';
-    setActiveTab(currentPath);
-  }, []);
+  // Aktif sekmeyi pathname'e göre daha doğru belirle
+  let activeTab = menuItems.find(item => pathname === item.url)?.id;
+  if (!activeTab) {
+    activeTab = menuItems
+      .filter(item => pathname.startsWith(item.url))
+      .sort((a, b) => b.url.length - a.url.length)[0]?.id;
+  }
+  if (!activeTab && pathname === '/student-panel') {
+    activeTab = 'dashboard';
+  }
 
   if (loading) {
     return (
@@ -117,101 +121,33 @@ export default function StudentPanel() {
     );
   }
   
+  // Sadece ana içerik (dashboard) alanı kalsın, sidebar tamamen kaldırıldı
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row">
-      {/* Mobil menü butonu */}
-      <div className="bg-white p-4 flex justify-between items-center md:hidden border-b shadow-sm sticky top-0 z-50">
-        <h1 className="text-lg font-semibold text-slate-800">{t('appName')}</h1>
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 rounded-md text-slate-500 hover:text-slate-700 hover:bg-slate-100"
-          >
-            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
+    <div className="flex-1 min-h-screen bg-gradient-to-br from-emerald-50 via-white to-slate-100 p-4 md:p-8 flex flex-col items-center justify-center">
+      <div className="max-w-2xl w-full mx-auto bg-white/90 rounded-2xl shadow-2xl p-8 flex flex-col items-center gap-6">
+        <div className="flex flex-col items-center gap-2">
+          <span className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 shadow-lg mb-2">
+            <svg width="40" height="40" fill="none" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm-1-7V7h2v6h-2Zm0 4v-2h2v2h-2Z" fill="#10b981"/></svg>
+          </span>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-slate-800 mb-1">Hoşgeldiniz!</h1>
+          <p className="text-slate-600 text-lg text-center">SpeakNest öğrenci paneline giriş yaptınız. Sol menüden dilediğiniz bölüme geçiş yapabilirsiniz.</p>
         </div>
-      </div>
-      
-      {/* Sol yan çubuğu - mobil için modal, desktop için sabit */}
-      <div className={`
-        fixed inset-0 z-40 md:relative md:inset-auto
-        transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
-        md:translate-x-0 transition-transform duration-300 ease-in-out
-        flex flex-col w-64 bg-white border-r border-slate-200 shadow-sm
-      `}>
-        <div className="p-4 border-b border-slate-200 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            {userProfile?.photoURL ? (
-              <div className="relative w-9 h-9 rounded-full overflow-hidden border border-slate-200">
-                <Image 
-                  src={userProfile.photoURL} 
-                  alt={userProfile.displayName || t('profile')} 
-                  className="object-cover"
-                  fill
-                />
-              </div>
-            ) : (
-              <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 font-bold">
-                {(userProfile?.displayName?.charAt(0) || userProfile?.firstName?.charAt(0) || 'S').toUpperCase()}
-              </div>
-            )}
-            <div>
-              <div className="text-sm font-medium text-slate-800 truncate max-w-[150px]">
-                {userProfile?.displayName || userProfile?.firstName || t('student')}
-              </div>
-              <div className="text-xs text-slate-500">{userProfile?.role || t('student')}</div>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mt-4">
+          <div className="flex flex-col items-center bg-gradient-to-r from-emerald-100 to-emerald-50 rounded-xl shadow p-6">
+            <span className="bg-emerald-200 text-emerald-700 rounded-full p-3 mb-2">
+              <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path d="M17 20H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h7l5 5v9a2 2 0 0 1-2 2ZM7 4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.41l-5.83-5.83A2 2 0 0 0 14.17 2H7Zm5 8v4m0 0h-2m2 0h2" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </span>
+            <div className="text-xl font-bold text-emerald-800">Toplam Katıldığın Toplantı</div>
+            <div className="text-2xl font-extrabold text-emerald-600 mt-1">0</div>
           </div>
-          <button 
-            onClick={() => setSidebarOpen(false)}
-            className="p-1.5 rounded-md text-slate-500 hover:text-slate-700 hover:bg-slate-100 md:hidden"
-          >
-            <X size={18} />
-          </button>
+          <div className="flex flex-col items-center bg-gradient-to-r from-blue-100 to-blue-50 rounded-xl shadow p-6">
+            <span className="bg-blue-200 text-blue-700 rounded-full p-3 mb-2">
+              <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path d="M8 17l4-4 4 4m0 0V7m0 10H8" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </span>
+            <div className="text-xl font-bold text-blue-800">Yaklaşan Pratikler</div>
+            <div className="text-2xl font-extrabold text-blue-600 mt-1">0</div>
+          </div>
         </div>
-        
-        {/* Menü öğeleri */}
-        <div className="flex-1 overflow-y-auto p-3">
-          <nav className="space-y-1">
-            {menuItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  router.push(item.url);
-                  setSidebarOpen(false);
-                }}
-                className={`
-                  w-full flex items-center px-3 py-2 rounded-md text-sm
-                  transition-colors
-                  ${activeTab === item.id 
-                    ? 'bg-slate-100 text-slate-800 font-medium' 
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
-                  }
-                `}
-              >
-                {item.icon}
-                <span className="ml-3">{item.label}</span>
-              </button>
-            ))}
-          </nav>
-        </div>
-        <div className="p-3 border-t">
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              handleLogout();
-            }}
-            className="w-full flex items-center px-3 py-2 rounded-md text-sm text-red-600 hover:bg-red-50 transition-colors"
-          >
-            <LogOut size={18} />
-            <span className="ml-3">Çıkış Yap</span>
-          </button>
-        </div>
-      </div>
-      
-      {/* Ana içerik alanı - sayfalar buraya dynamik olarak yüklenecek */}
-      <div className="flex-1 p-4 md:p-6">
-        {/* Her sayfa için içerik şimdi kendi sayfasında olacak */}
       </div>
     </div>
   );

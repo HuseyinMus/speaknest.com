@@ -186,42 +186,33 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         fixed inset-0 z-40 md:relative md:inset-auto
         transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
         md:translate-x-0 transition-transform duration-300 ease-in-out
-        flex flex-col w-64 bg-white border-r border-slate-200 shadow-sm
+        flex flex-col w-72 bg-gradient-to-b from-emerald-100/80 via-white/80 to-slate-100/80 backdrop-blur-xl border-r border-slate-200 shadow-2xl
+        min-h-screen
       `}>
-        <div className="p-4 border-b border-slate-200 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            {userProfile?.photoURL ? (
-              <div className="relative w-9 h-9 rounded-full overflow-hidden border border-slate-200">
-                <Image 
-                  src={userProfile.photoURL} 
-                  alt={userProfile.displayName || t('profile')} 
-                  className="object-cover"
-                  fill
-                />
-              </div>
-            ) : (
-              <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 font-bold">
-                {(userProfile?.displayName?.charAt(0) || userProfile?.firstName?.charAt(0) || 'S').toUpperCase()}
-              </div>
-            )}
-            <div>
-              <div className="text-sm font-medium text-slate-800 truncate max-w-[150px]">
-                {userProfile?.displayName || userProfile?.firstName || t('student')}
-              </div>
-              <div className="text-xs text-slate-500">{userProfile?.role || userRole}</div>
+        {/* Kullanıcı kartı */}
+        <div className="p-7 border-b border-slate-200 flex flex-col items-center gap-4 bg-white/70 rounded-b-2xl shadow-lg mx-4 mt-4">
+          {userProfile?.photoURL ? (
+            <div className="relative w-20 h-20 rounded-full overflow-hidden border-4 border-emerald-300 shadow-xl">
+              <Image 
+                src={userProfile.photoURL} 
+                alt={userProfile.displayName || t('profile')} 
+                className="object-cover"
+                fill
+              />
             </div>
+          ) : (
+            <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 font-bold border-4 border-emerald-300 shadow-xl text-3xl">
+              {(userProfile?.displayName?.charAt(0) || userProfile?.firstName?.charAt(0) || 'S').toUpperCase()}
+            </div>
+          )}
+          <div className="flex flex-col items-center">
+            <span className="text-xl font-bold text-slate-800 truncate max-w-[180px]">{userProfile?.displayName || userProfile?.firstName || t('student')}</span>
+            <span className="text-xs text-slate-500">{userProfile?.role || t('student')}</span>
           </div>
-          <button 
-            onClick={() => setSidebarOpen(false)}
-            className="p-1.5 rounded-md text-slate-500 hover:text-slate-700 hover:bg-slate-100 md:hidden"
-          >
-            <X size={18} />
-          </button>
         </div>
-        
         {/* Menü öğeleri */}
-        <div className="flex-1 overflow-y-auto p-3">
-          <nav className="space-y-1">
+        <div className="flex-1 overflow-y-auto flex flex-col justify-between mt-6">
+          <nav className="space-y-3 px-5">
             {filteredMenuItems.map((item) => (
               <button
                 key={item.id}
@@ -230,31 +221,36 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
                   setSidebarOpen(false);
                 }}
                 className={`
-                  w-full flex items-center px-3 py-2 rounded-md text-sm
-                  transition-colors
+                  group w-full flex items-center gap-4 px-6 py-3 rounded-2xl text-[17px] font-semibold transition-all duration-200
+                  relative
                   ${activeTab === item.id 
-                    ? 'bg-slate-100 text-slate-800 font-medium' 
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
+                    ? 'bg-white/90 shadow-lg text-emerald-700 border-l-8 border-emerald-500 animate-pulse' 
+                    : 'text-slate-600 hover:bg-emerald-50/80 hover:text-emerald-700'
                   }
+                  focus:outline-none focus:ring-2 focus:ring-emerald-200
                 `}
               >
-                {item.icon}
-                <span className="ml-3">{item.label}</span>
+                <span className={`text-2xl ${activeTab === item.id ? 'text-emerald-600' : 'text-slate-400 group-hover:text-emerald-500'}`}>{item.icon}</span>
+                <span className="truncate">{item.label}</span>
+                {activeTab === item.id && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-10 bg-emerald-500 rounded-r-xl shadow-md"></span>
+                )}
               </button>
             ))}
           </nav>
-        </div>
-        <div className="p-3 border-t">
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              handleLogout();
-            }}
-            className="w-full flex items-center px-3 py-2 rounded-md text-sm text-red-600 hover:bg-red-50 transition-colors"
-          >
-            <LogOut size={18} />
-            <span className="ml-3">Çıkış Yap</span>
-          </button>
+          {/* Çıkış butonunu en alta sabitle */}
+          <div className="mt-10 px-5 pb-8">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                handleLogout();
+              }}
+              className="w-full flex items-center gap-4 px-6 py-3 rounded-2xl text-[17px] font-bold text-red-600 bg-white/80 hover:bg-red-50 transition-all duration-200 shadow-md border border-red-100"
+            >
+              <LogOut size={24} />
+              <span>Çıkış Yap</span>
+            </button>
+          </div>
         </div>
       </div>
       
