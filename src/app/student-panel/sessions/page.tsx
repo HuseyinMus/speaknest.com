@@ -39,6 +39,8 @@ export default function SessionsPage() {
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
   const [isRegistered, setIsRegistered] = useState(false);
+  const [showLateRegistrationModal, setShowLateRegistrationModal] = useState(false);
+  const [lateRegistrationMessage, setLateRegistrationMessage] = useState('');
 
   // Toplantı verilerini getir
   const fetchMeetings = useCallback(async () => {
@@ -161,13 +163,13 @@ export default function SessionsPage() {
 
       console.log('Kullanıcı:', user.uid);
 
-      // Toplantının başlamasına 6 saatten az kaldıysa kayıt yapılamaz
+      // Toplantının başlamasına 30 dakikadan az kaldıysa kayıt yapılamaz
       const now = new Date();
       const meetingStartTime = meeting.startTime;
       const timeDiff = meetingStartTime.getTime() - now.getTime();
-      const hoursDiff = timeDiff / (1000 * 60 * 60);
+      const minutesDiff = timeDiff / (1000 * 60);
 
-      console.log('Toplantı başlangıcına kalan süre:', hoursDiff, 'saat');
+      console.log('Toplantı başlangıcına kalan süre:', minutesDiff, 'dakika');
 
       // Toplantı geçmiş mi kontrol et
       if (timeDiff < 0) {
@@ -176,8 +178,8 @@ export default function SessionsPage() {
         return;
       }
 
-      if (hoursDiff < 6) {
-        toast.error(t('registrationClosed', 'Toplantıya kayıt olmak için çok geç. Toplantı başlamasına 6 saatten az kaldı.'));
+      if (minutesDiff < 30) {
+        toast.error(t('registrationClosed', 'Toplantıya kayıt olmak için çok geç. Toplantı başlamasına 30 dakikadan az kaldı.'));
         return;
       }
 
@@ -195,7 +197,36 @@ export default function SessionsPage() {
         return;
       }
 
-      console.log('Firestore güncellemesi başlatılıyor...');
+      // 30 dakikadan az kala kayıt olma uyarısı
+      if (minutesDiff < 60) {
+        const message = `
+          ⚠️ Önemli Bilgilendirme ⚠️
+
+          Bu toplantıya kayıt olmak üzeresiniz, ancak toplantı başlamasına ${Math.ceil(minutesDiff)} dakika kaldı.
+
+          Dikkat: Toplantı başlamasına 30 dakikadan az kaldığı için, kayıt olduktan sonra kaydınızı iptal edemeyeceksiniz.
+
+          Devam etmek istiyor musunuz?
+        `;
+        setLateRegistrationMessage(message);
+        setShowLateRegistrationModal(true);
+        setSelectedMeeting(meeting);
+        return;
+      }
+
+      // Normal kayıt işlemi
+      await processRegistration(meeting);
+    } catch (error) {
+      console.error('Kayıt hatası:', error);
+      toast.error(t('registrationError', 'Kayıt işlemi sırasında bir hata oluştu.'));
+    }
+  };
+
+  // Kayıt işlemini gerçekleştir
+  const processRegistration = async (meeting: Meeting) => {
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
 
       // Toplantıya kayıt ol
       const meetingRef = doc(db, 'meetings', meeting.id);
@@ -207,22 +238,17 @@ export default function SessionsPage() {
         })
       });
 
-      console.log('Toplantı güncellendi');
-
       // Kullanıcının kayıtlarını güncelle
       const userRef = doc(db, 'users', user.uid);
       await updateDoc(userRef, {
         registeredMeetings: arrayUnion(meeting.id)
       });
 
-      console.log('Kullanıcı kayıtları güncellendi');
-
-      toast.success(t('registrationSuccess', 'Toplantıya başarıyla kayıt oldunuz!'));
+      toast.success(t('registrationSuccess', 'Toplantıya başarıyla kayıt oldunuz.'));
       setIsRegistered(true);
-      setShowRegistrationModal(false);
-      await fetchMeetings(); // Toplantı listesini güncelle
+      fetchMeetings(); // Toplantı listesini güncelle
     } catch (error) {
-      console.error('Kayıt hatası:', error);
+      console.error('Kayıt işlemi hatası:', error);
       toast.error(t('registrationError', 'Kayıt işlemi sırasında bir hata oluştu.'));
     }
   };
@@ -236,14 +262,14 @@ export default function SessionsPage() {
         return;
       }
 
-      // Toplantının başlamasına 6 saatten az kaldıysa iptal edilemez
+      // Toplantının başlamasına 30 dakikadan az kaldıysa iptal edilemez
       const now = new Date();
       const meetingStartTime = meeting.startTime;
       const timeDiff = meetingStartTime.getTime() - now.getTime();
-      const hoursDiff = timeDiff / (1000 * 60 * 60);
+      const minutesDiff = timeDiff / (1000 * 60);
 
-      if (hoursDiff < 6) {
-        toast.error(t('cancellationClosed', 'Toplantıdan ayrılmak için çok geç. Toplantı başlamasına 6 saatten az kaldı.'));
+      if (minutesDiff < 30) {
+        toast.error(t('cancellationClosed', 'Toplantıdan ayrılmak için çok geç. Toplantı başlamasına 30 dakikadan az kaldı.'));
         return;
       }
 
@@ -319,8 +345,8 @@ export default function SessionsPage() {
               const now = new Date();
               const meetingStartTime = meeting.startTime;
               const timeDiff = meetingStartTime.getTime() - now.getTime();
-              const hoursDiff = timeDiff / (1000 * 60 * 60);
-              const canRegister = hoursDiff >= 6;
+              const minutesDiff = timeDiff / (1000 * 60);
+              const canRegister = minutesDiff >= 30;
 
               return (
                 <div key={meeting.id} className="bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
@@ -417,6 +443,43 @@ export default function SessionsPage() {
                 onClick={() => {
                   if (selectedMeeting) {
                     registerToMeeting(selectedMeeting);
+                  }
+                }}
+                className="flex-1 py-2 px-4 rounded-md bg-emerald-500 text-white font-medium hover:bg-emerald-600 transition-colors"
+              >
+                {t('confirm', 'Onayla')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Geç Kayıt Uyarı Modalı */}
+      {showLateRegistrationModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full">
+            <div className="text-center mb-6">
+              <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Clock size={24} className="text-yellow-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 mb-2">Geç Kayıt Uyarısı</h3>
+              <p className="text-slate-600 whitespace-pre-line">{lateRegistrationMessage}</p>
+            </div>
+            <div className="flex gap-4">
+              <button
+                onClick={() => {
+                  setShowLateRegistrationModal(false);
+                  setSelectedMeeting(null);
+                }}
+                className="flex-1 py-2 px-4 rounded-md bg-slate-100 text-slate-700 font-medium hover:bg-slate-200 transition-colors"
+              >
+                {t('cancel', 'İptal')}
+              </button>
+              <button
+                onClick={() => {
+                  if (selectedMeeting) {
+                    processRegistration(selectedMeeting);
+                    setShowLateRegistrationModal(false);
                   }
                 }}
                 className="flex-1 py-2 px-4 rounded-md bg-emerald-500 text-white font-medium hover:bg-emerald-600 transition-colors"
