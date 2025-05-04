@@ -5,11 +5,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLanguage } from '@/lib/context/LanguageContext';
 import { useAuth } from '@/lib/hooks/useAuth';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const { t, changeLanguage } = useLanguage();
+  const { t } = useLanguage();
   const { user } = useAuth();
   const pathname = usePathname();
 
@@ -60,12 +61,7 @@ const Header = () => {
           {/* Right Side */}
           <div className="flex items-center space-x-4">
             {/* Language Switcher */}
-            <button
-              onClick={() => changeLanguage()}
-              className="hidden md:block text-sm font-medium text-gray-600 hover:text-green-600 transition-colors"
-            >
-              {t('language')}
-            </button>
+            <LanguageSwitcher variant="buttons" className="hidden md:block" />
 
             {/* Auth Buttons */}
             {user ? (
@@ -142,15 +138,7 @@ const Header = () => {
                 </Link>
               ))}
               <div className="pt-4 border-t">
-                <button
-                  onClick={() => {
-                    changeLanguage();
-                    setIsMenuOpen(false);
-                  }}
-                  className="text-sm font-medium text-gray-600 hover:text-green-600 transition-colors"
-                >
-                  {t('language')}
-                </button>
+                <LanguageSwitcher variant="buttons" className="w-full" />
               </div>
               {user ? (
                 <Link

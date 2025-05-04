@@ -11,6 +11,13 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useToast } from '@/lib/context/ToastContext';
 import { Shimmer, ShimmerCard, ShimmerList } from '@/components/ui/Shimmer';
 
+enum UserRole {
+  ADMIN = 'admin',
+  TEACHER = 'teacher',
+  STUDENT = 'student',
+  PRO_USER = 'proUser'
+}
+
 interface User {
   uid: string;
   displayName: string | null;
@@ -19,11 +26,13 @@ interface User {
 }
 
 interface UserProfile {
-  displayName?: string;
-  firstName?: string;
-  lastName?: string;
-  photoURL?: string;
-  role?: string;
+  displayName: string;
+  firstName: string;
+  lastName: string;
+  photoURL: string;
+  role: UserRole;
+  createdAt?: Date;
+  lastLogin?: Date;
 }
 
 interface Meeting {
@@ -108,6 +117,21 @@ export default function ProUserPanel() {
     }
   }, [t, setError]);
   
+  const getRedirectPath = (role: string): string => {
+    switch (role) {
+      case 'admin':
+        return '/dashboard';
+      case 'teacher':
+        return '/teacher-panel';
+      case 'student':
+        return '/student-panel/dashboard';
+      case 'proUser':
+        return '/prouser-panel';
+      default:
+        return '/';
+    }
+  };
+  
   // Kullanıcı profilini getir
   const fetchUserProfile = useCallback(async (userId: string) => {
     try {
@@ -119,15 +143,7 @@ export default function ProUserPanel() {
         
         // Kullanıcı proUser değilse yönlendir
         if (userData.role !== 'proUser') {
-          if (userData.role === 'admin') {
-            router.push('/dashboard');
-          } else if (userData.role === 'teacher') {
-            router.push('/teacher-panel');
-          } else if (userData.role === 'student') {
-            router.push('/student-panel');
-          } else {
-            router.push('/');
-          }
+          router.push(getRedirectPath(userData.role));
           return;
         }
         

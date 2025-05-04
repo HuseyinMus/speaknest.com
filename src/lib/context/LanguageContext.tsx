@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { auth, db } from '@/lib/firebase/config';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { translateKey, TranslationKey } from '@/lib/translations';
-import { translations } from '../translations';
+import { translations } from '@/lib/translations/translations';
 import { getUserFromDatabase } from '@/lib/firebase/auth';
 
 // Desteklenen dillerin tanımlaması
@@ -90,11 +90,25 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
 
   // Çeviri fonksiyonu - parametre değişikliği desteği ile
   const t = (key: TranslationKey, params?: Record<string, string>) => {
-    let text = translations[language][key] || translations.en[key] || key;
+    // Önce seçili dilde çeviriyi ara
+    let text = translations[language][key];
     
+    // Eğer seçili dilde yoksa, İngilizce'ye bak
+    if (!text) {
+      text = translations.en[key];
+    }
+    
+    // Eğer İngilizce'de de yoksa, anahtarı döndür
+    if (!text) {
+      console.warn(`Çeviri bulunamadı: ${key} (${language})`);
+      return key;
+    }
+    
+    // Parametreleri yerleştir
     if (params) {
       Object.entries(params).forEach(([paramKey, paramValue]) => {
-        text = text.replace(new RegExp(`{{${paramKey}}}`, 'g'), paramValue);
+        const regex = new RegExp(`\\{${paramKey}\\}`, 'g');
+        text = text.replace(regex, paramValue);
       });
     }
     

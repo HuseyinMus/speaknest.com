@@ -7,8 +7,10 @@ import { auth, db } from '@/lib/firebase/config';
 import { doc, getDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import Header from '@/components/Header';
+import { useLanguage } from '@/lib/context/LanguageContext';
 
 export default function PricingPage() {
+  const { t } = useLanguage();
   const [user, setUser] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -38,7 +40,7 @@ export default function PricingPage() {
         setUserProfile(userDoc.data());
       }
     } catch (err) {
-      console.error('Kullanıcı bilgileri alınamadı:', err);
+      console.error(t('errorFetchUserProfile'), err);
     }
   };
   
@@ -48,7 +50,7 @@ export default function PricingPage() {
       setUser(null);
       setUserProfile(null);
     } catch (err) {
-      console.error('Çıkış yapılamadı:', err);
+      console.error(t('errorLogout'), err);
     }
   };
 
@@ -63,88 +65,88 @@ export default function PricingPage() {
   const plans = {
     monthly: [
       {
-        name: 'Başlangıç',
+        name: t('pricingPlanBasic'),
         price: '199',
-        period: 'aylık',
+        period: t('pricingPeriodMonthly'),
         features: [
-          { text: 'Haftada 2 ders', included: true },
-          { text: 'Birebir eğitmen desteği', included: true },
-          { text: 'Temel seviye materyaller', included: true },
-          { text: '7/24 destek', included: false },
-          { text: 'Sertifika', included: false },
-          { text: 'İleri seviye materyaller', included: false }
+          { text: t('pricingFeatureWeeklyLessons', { count: '2' }), included: true },
+          { text: t('pricingFeatureOneOnOne'), included: true },
+          { text: t('pricingFeatureBasicMaterials'), included: true },
+          { text: t('pricingFeature247Support'), included: false },
+          { text: t('pricingFeatureCertificate'), included: false },
+          { text: t('pricingFeatureAdvancedMaterials'), included: false }
         ],
         popular: false
       },
       {
-        name: 'Profesyonel',
+        name: t('pricingPlanProfessional'),
         price: '399',
-        period: 'aylık',
+        period: t('pricingPeriodMonthly'),
         features: [
-          { text: 'Haftada 4 ders', included: true },
-          { text: 'Birebir eğitmen desteği', included: true },
-          { text: 'Tüm seviye materyaller', included: true },
-          { text: '7/24 destek', included: true },
-          { text: 'Sertifika', included: true },
-          { text: 'Özel ders programı', included: false }
+          { text: t('pricingFeatureWeeklyLessons', { count: '4' }), included: true },
+          { text: t('pricingFeatureOneOnOne'), included: true },
+          { text: t('pricingFeatureAllMaterials'), included: true },
+          { text: t('pricingFeature247Support'), included: true },
+          { text: t('pricingFeatureCertificate'), included: true },
+          { text: t('pricingFeatureCustomSchedule'), included: false }
         ],
         popular: true
       },
       {
-        name: 'Premium',
+        name: t('pricingPlanPremium'),
         price: '699',
-        period: 'aylık',
+        period: t('pricingPeriodMonthly'),
         features: [
-          { text: 'Sınırsız ders', included: true },
-          { text: 'Birebir eğitmen desteği', included: true },
-          { text: 'Tüm seviye materyaller', included: true },
-          { text: '7/24 destek', included: true },
-          { text: 'Sertifika', included: true },
-          { text: 'Özel ders programı', included: true }
+          { text: t('pricingFeatureUnlimitedLessons'), included: true },
+          { text: t('pricingFeatureOneOnOne'), included: true },
+          { text: t('pricingFeatureAllMaterials'), included: true },
+          { text: t('pricingFeature247Support'), included: true },
+          { text: t('pricingFeatureCertificate'), included: true },
+          { text: t('pricingFeatureCustomSchedule'), included: true }
         ],
         popular: false
       }
     ],
     yearly: [
       {
-        name: 'Başlangıç',
+        name: t('pricingPlanBasic'),
         price: '1990',
-        period: 'yıllık',
+        period: t('pricingPeriodYearly'),
         features: [
-          { text: 'Haftada 2 ders', included: true },
-          { text: 'Birebir eğitmen desteği', included: true },
-          { text: 'Temel seviye materyaller', included: true },
-          { text: '7/24 destek', included: false },
-          { text: 'Sertifika', included: false },
-          { text: 'İleri seviye materyaller', included: false }
+          { text: t('pricingFeatureWeeklyLessons', { count: '2' }), included: true },
+          { text: t('pricingFeatureOneOnOne'), included: true },
+          { text: t('pricingFeatureBasicMaterials'), included: true },
+          { text: t('pricingFeature247Support'), included: false },
+          { text: t('pricingFeatureCertificate'), included: false },
+          { text: t('pricingFeatureAdvancedMaterials'), included: false }
         ],
         popular: false
       },
       {
-        name: 'Profesyonel',
+        name: t('pricingPlanProfessional'),
         price: '3990',
-        period: 'yıllık',
+        period: t('pricingPeriodYearly'),
         features: [
-          { text: 'Haftada 4 ders', included: true },
-          { text: 'Birebir eğitmen desteği', included: true },
-          { text: 'Tüm seviye materyaller', included: true },
-          { text: '7/24 destek', included: true },
-          { text: 'Sertifika', included: true },
-          { text: 'Özel ders programı', included: false }
+          { text: t('pricingFeatureWeeklyLessons', { count: '4' }), included: true },
+          { text: t('pricingFeatureOneOnOne'), included: true },
+          { text: t('pricingFeatureAllMaterials'), included: true },
+          { text: t('pricingFeature247Support'), included: true },
+          { text: t('pricingFeatureCertificate'), included: true },
+          { text: t('pricingFeatureCustomSchedule'), included: false }
         ],
         popular: true
       },
       {
-        name: 'Premium',
+        name: t('pricingPlanPremium'),
         price: '6990',
-        period: 'yıllık',
+        period: t('pricingPeriodYearly'),
         features: [
-          { text: 'Sınırsız ders', included: true },
-          { text: 'Birebir eğitmen desteği', included: true },
-          { text: 'Tüm seviye materyaller', included: true },
-          { text: '7/24 destek', included: true },
-          { text: 'Sertifika', included: true },
-          { text: 'Özel ders programı', included: true }
+          { text: t('pricingFeatureUnlimitedLessons'), included: true },
+          { text: t('pricingFeatureOneOnOne'), included: true },
+          { text: t('pricingFeatureAllMaterials'), included: true },
+          { text: t('pricingFeature247Support'), included: true },
+          { text: t('pricingFeatureCertificate'), included: true },
+          { text: t('pricingFeatureCustomSchedule'), included: true }
         ],
         popular: false
       }
@@ -162,11 +164,10 @@ export default function PricingPage() {
         </div>
         <div className="relative max-w-7xl mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
-            Eğitim Paketlerimiz
+            {t('pricingHeroTitle')}
           </h1>
           <p className="mt-6 text-xl text-green-100 max-w-3xl">
-            İhtiyaçlarınıza uygun eğitim paketlerimizle İngilizce öğrenme yolculuğunuza başlayın.
-            Profesyonel eğitmenlerimiz ve modern eğitim metodlarımızla hedeflerinize ulaşın.
+            {t('pricingHeroDescription')}
           </p>
         </div>
       </div>
@@ -184,7 +185,7 @@ export default function PricingPage() {
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                Aylık
+                {t('pricingMonthly')}
               </button>
               <button
                 onClick={() => setSelectedPlan('yearly')}
@@ -194,7 +195,7 @@ export default function PricingPage() {
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                Yıllık
+                {t('pricingYearly')}
               </button>
             </div>
           </div>
@@ -213,7 +214,7 @@ export default function PricingPage() {
             >
               {plan.popular && (
                 <div className="absolute top-0 right-0 bg-green-500 text-white px-4 py-1 rounded-bl-lg">
-                  En Popüler
+                  {t('pricingMostPopular')}
                 </div>
               )}
               <div className="p-8">
@@ -245,7 +246,7 @@ export default function PricingPage() {
                       : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                   }`}
                 >
-                  {user ? 'Hemen Başla' : 'Ücretsiz Deneyin'}
+                  {user ? t('pricingStartNow') : t('pricingTryFree')}
                 </button>
               </div>
             </div>
@@ -256,7 +257,7 @@ export default function PricingPage() {
       {/* Özellikler */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
-          Tüm Paketlerde Bulunan Özellikler
+          {t('pricingCommonFeaturesTitle')}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div className="bg-white rounded-lg shadow-lg p-6 text-center">
@@ -265,9 +266,9 @@ export default function PricingPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Profesyonel Eğitmenler</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('pricingCommonFeature1Title')}</h3>
             <p className="text-gray-600">
-              Alanında uzman, deneyimli eğitmenlerle çalışın
+              {t('pricingCommonFeature1Description')}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow-lg p-6 text-center">
@@ -276,9 +277,9 @@ export default function PricingPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Esnek Ders Saatleri</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('pricingCommonFeature2Title')}</h3>
             <p className="text-gray-600">
-              Size uygun zamanlarda ders alın
+              {t('pricingCommonFeature2Description')}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow-lg p-6 text-center">
@@ -287,9 +288,9 @@ export default function PricingPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Birebir Eğitim</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('pricingCommonFeature3Title')}</h3>
             <p className="text-gray-600">
-              Kişiye özel eğitim programı
+              {t('pricingCommonFeature3Description')}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow-lg p-6 text-center">
@@ -298,9 +299,9 @@ export default function PricingPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Zengin İçerik</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('pricingCommonFeature4Title')}</h3>
             <p className="text-gray-600">
-              Güncel ve kapsamlı eğitim materyalleri
+              {t('pricingCommonFeature4Description')}
             </p>
           </div>
         </div>

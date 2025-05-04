@@ -135,25 +135,28 @@ export default function Home() {
         <div className="container mx-auto px-4 flex flex-col md:flex-row items-center gap-10">
           <div className="text-center max-w-3xl mx-auto md:text-left md:max-w-xl md:mx-0 flex-1">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-              İngilizce Konuşma ve Kelime Öğrenme Platformu
+              {t('heroTitle')}
             </h1>
             <p className="text-lg text-gray-600 mb-8">
-              SpeakNest ile anadili İngilizce olan eğitmenlerle konuşma pratiği yapın ve bilimsel metodlarla kelime öğrenin.
+              {t('heroDescription')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
               {user ? (
                 <Link
-                  href="/student-panel/dashboard"
+                  href={userProfile?.role === 'admin' ? '/dashboard' : 
+                        userProfile?.role === 'teacher' ? '/teacher-panel' : 
+                        userProfile?.role === 'proUser' ? '/prouser-panel' : 
+                        '/student-panel/dashboard'}
                   className="px-8 py-3 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition-colors text-lg font-medium"
                 >
-                  Derslerime Git
+                  {t('goToLessons')}
                 </Link>
               ) : (
                 <Link
                   href="/register"
                   className="px-8 py-3 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition-colors text-lg font-medium"
                 >
-                  Hemen Başla
+                  {t('startNow')}
                 </Link>
               )}
             </div>
@@ -186,30 +189,29 @@ export default function Home() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">Anadili İngilizce Olanlarla Konuşma Pratiği</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">{t('speakingPracticeTitle')}</h2>
                 </div>
                 <p className="text-gray-600 mt-4">
-                  Profesyonel eğitmenlerle birebir konuşma pratiği yaparak İngilizce konuşma becerilerinizi geliştirin. 
-                  Gerçek hayatta kullanılan güncel İngilizce ile pratik yapma imkanı.
+                  {t('speakingPracticeDescription')}
                 </p>
                 <ul className="space-y-3 mt-4">
                   <li className="flex items-center space-x-2">
                     <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    <span>3-6 kişilik grup dersleri</span>
+                    <span>{t('groupLessons')}</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    <span>Esnek program</span>
+                    <span>{t('flexibleSchedule')}</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    <span>Anadili İngilizce olan eğitmenler</span>
+                    <span>{t('nativeTeachers')}</span>
                   </li>
                 </ul>
               </div>
@@ -229,30 +231,29 @@ export default function Home() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">Bilimsel Metodla Kelime Öğrenme</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">{t('vocabularyLearningTitle')}</h2>
                 </div>
                 <p className="text-gray-600 mt-4">
-                  Spaced Repetition (Aralıklı Tekrar) sistemi ile kelimeleri kalıcı olarak öğrenin. 
-                  Yapay zeka destekli sistemimiz, öğrenme sürecinizi optimize eder.
+                  {t('vocabularyLearningDescription')}
                 </p>
                 <ul className="space-y-3 mt-4">
                   <li className="flex items-center space-x-2">
                     <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    <span>Spaced Repetition sistemi</span>
+                    <span>{t('spacedRepetition')}</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    <span>Yapay zeka destekli öğrenme</span>
+                    <span>{t('aiLearning')}</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    <span>Kişiselleştirilmiş kelime listeleri</span>
+                    <span>{t('personalizedLists')}</span>
                   </li>
                 </ul>
               </div>
@@ -264,7 +265,7 @@ export default function Home() {
       {/* How It Works */}
       <div className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Nasıl Çalışır?</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">{t('howItWorks')}</h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
               <img
@@ -273,8 +274,8 @@ export default function Home() {
                 className="w-16 h-16 object-contain mb-4"
               />
               <div className="text-4xl font-bold text-green-600 mb-4">1</div>
-              <h3 className="text-xl font-semibold mb-2">Kayıt Ol</h3>
-              <p className="text-gray-600">Hızlı ve kolay kayıt süreci ile hemen başlayın.</p>
+              <h3 className="text-xl font-semibold mb-2">{t('registerStep')}</h3>
+              <p className="text-gray-600">{t('registerDescription')}</p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
               <img
@@ -283,8 +284,8 @@ export default function Home() {
                 className="w-16 h-16 object-contain mb-4"
               />
               <div className="text-4xl font-bold text-green-600 mb-4">2</div>
-              <h3 className="text-xl font-semibold mb-2">Seviyenizi Belirleyin</h3>
-              <p className="text-gray-600">Seviye tespit sınavı ile size uygun programı oluşturalım.</p>
+              <h3 className="text-xl font-semibold mb-2">{t('levelStep')}</h3>
+              <p className="text-gray-600">{t('levelDescription')}</p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
               <img
@@ -293,8 +294,8 @@ export default function Home() {
                 className="w-16 h-16 object-contain mb-4 rounded-lg"
               />
               <div className="text-4xl font-bold text-green-600 mb-4">3</div>
-              <h3 className="text-xl font-semibold mb-2">Öğrenmeye Başlayın</h3>
-              <p className="text-gray-600">Konuşma pratiği ve kelime öğrenme programınıza başlayın.</p>
+              <h3 className="text-xl font-semibold mb-2">{t('startLearningStep')}</h3>
+              <p className="text-gray-600">{t('startLearningDescription')}</p>
             </div>
           </div>
         </div>
@@ -303,15 +304,15 @@ export default function Home() {
       {/* CTA Section */}
       <div className="py-16 bg-green-600 text-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-6">Hemen Başlayın</h2>
+          <h2 className="text-3xl font-bold mb-6">{t('startNowTitle')}</h2>
           <p className="text-lg mb-8 max-w-2xl mx-auto">
-            İngilizce konuşma becerilerinizi geliştirin ve kelime dağarcığınızı genişletin.
+            {t('startNowDescription')}
           </p>
           <Link
             href="/register"
             className="inline-block px-8 py-3 bg-white text-green-600 rounded-lg shadow hover:bg-gray-100 transition-colors text-lg font-medium"
           >
-            Ücretsiz Deneyin
+            {t('tryFree')}
           </Link>
         </div>
       </div>
@@ -326,7 +327,7 @@ export default function Home() {
                 <img src="/images/homepage_hero_illustration_for_a_modern_language_learning_platform_soft_green_color_palette_minimal_oqb01o9l6rcglswonop4_2.png" alt="SpeakNest Logo" className="w-10 h-10 rounded-lg mr-2" />
                 <span className="text-2xl font-bold text-green-400">SpeakNest</span>
               </div>
-              <p className="text-gray-400 max-w-xs">İngilizce konuşma pratiği ve kelime öğrenme için modern, güvenilir ve yenilikçi platform.</p>
+              <p className="text-gray-400 max-w-xs">{t('footerDescription')}</p>
               <div className="flex space-x-4 mt-4">
                 <a href="#" aria-label="Instagram" className="hover:text-green-400 transition-colors">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect width="20" height="20" x="2" y="2" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
@@ -342,25 +343,25 @@ export default function Home() {
             {/* Linkler */}
             <div className="flex-1 grid grid-cols-2 gap-8">
               <div>
-                <h3 className="font-semibold mb-3 text-green-300">Hakkımızda</h3>
+                <h3 className="font-semibold mb-3 text-green-300">{t('aboutUs')}</h3>
                 <ul className="space-y-2">
-                  <li><Link href="/about" className="text-gray-400 hover:text-white transition-colors">Biz Kimiz</Link></li>
-                  <li><Link href="/teachers" className="text-gray-400 hover:text-white transition-colors">Eğitmenlerimiz</Link></li>
-                  <li><Link href="/career" className="text-gray-400 hover:text-white transition-colors">Kariyer</Link></li>
+                  <li><Link href="/about" className="text-gray-400 hover:text-white transition-colors">{t('aboutUs')}</Link></li>
+                  <li><Link href="/teachers" className="text-gray-400 hover:text-white transition-colors">{t('ourTeachers')}</Link></li>
+                  <li><Link href="/career" className="text-gray-400 hover:text-white transition-colors">{t('career')}</Link></li>
                 </ul>
               </div>
               <div>
-                <h3 className="font-semibold mb-3 text-green-300">Destek</h3>
+                <h3 className="font-semibold mb-3 text-green-300">{t('support')}</h3>
                 <ul className="space-y-2">
-                  <li><Link href="/contact" className="text-gray-400 hover:text-white transition-colors">İletişim</Link></li>
-                  <li><Link href="/faq" className="text-gray-400 hover:text-white transition-colors">SSS</Link></li>
-                  <li><Link href="/help" className="text-gray-400 hover:text-white transition-colors">Yardım Merkezi</Link></li>
+                  <li><Link href="/contact" className="text-gray-400 hover:text-white transition-colors">{t('contactUs')}</Link></li>
+                  <li><Link href="/faq" className="text-gray-400 hover:text-white transition-colors">{t('faq')}</Link></li>
+                  <li><Link href="/help" className="text-gray-400 hover:text-white transition-colors">{t('helpCenter')}</Link></li>
                 </ul>
               </div>
             </div>
           </div>
           <div className="border-t border-gray-700 mt-10 pt-6 text-center text-gray-500 text-sm">
-            © 2024 SpeakNest. Tüm Hakları Saklıdır.
+            {t('copyright')}
           </div>
         </div>
       </footer>

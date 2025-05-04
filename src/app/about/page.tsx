@@ -7,6 +7,13 @@ import { auth, db } from '@/lib/firebase/config';
 import { doc, getDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import Header from '@/components/Header';
+import { useLanguage } from '@/lib/context/LanguageContext';
+import { useAuth } from '@/lib/auth';
+import '@/lib/i18n';
+
+interface UserProfile {
+  role: 'admin' | 'teacher' | 'proUser' | 'student';
+}
 
 export default function About() {
   const [user, setUser] = useState<any>(null);
@@ -14,6 +21,8 @@ export default function About() {
   const [loading, setLoading] = useState(true);
   
   const router = useRouter();
+  const { t } = useLanguage();
+  const { user: authUser } = useAuth();
   
   useEffect(() => {
     const checkAuth = async () => {
@@ -53,7 +62,7 @@ export default function About() {
     }
   };
   
-  const navigateToUserPanel = (userProfile) => {
+  const navigateToUserPanel = (userProfile: UserProfile) => {
     if (userProfile.role === 'admin') {
       router.push('/dashboard');
     } else if (userProfile.role === 'teacher') {
@@ -125,9 +134,9 @@ export default function About() {
           <div className="absolute inset-0 bg-black opacity-40"></div>
         </div>
         <div className="container mx-auto px-4 py-20 relative z-10 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6">Hakkımızda</h1>
+          <h1 className="text-5xl md:text-6xl font-bold mb-6">{t('aboutTitle')}</h1>
           <p className="text-xl md:text-2xl max-w-3xl mx-auto">
-            Dil öğreniminde yenilikçi yaklaşımlarla herkes için erişilebilir eğitim
+            {t('aboutDescription')}
           </p>
         </div>
       </div>
@@ -136,10 +145,9 @@ export default function About() {
       <div className="py-16 md:py-24 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Misyonumuz</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">{t('missionTitle')}</h2>
             <p className="text-xl text-gray-600">
-              İngilizce öğrenmek isteyen herkese, her yerde, kaliteli ve etkileşimli eğitim hizmeti sunarak
-              dil bariyerlerini aşmalarına yardımcı olmak.
+              {t('missionDescription')}
             </p>
           </div>
           
@@ -150,9 +158,9 @@ export default function About() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3 text-center">Konuşma Odaklı</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-3 text-center">{t('speakingFocusedTitle')}</h3>
               <p className="text-gray-600 text-center">
-                Pratik yaparak öğrenmeyi teşvik eden, konuşma becerilerini geliştirmeye odaklanan bir eğitim metodolojisi.
+                {t('speakingFocusedDescription')}
               </p>
             </div>
             
@@ -162,9 +170,9 @@ export default function About() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3 text-center">Kişiselleştirilmiş</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-3 text-center">{t('personalizedTitle')}</h3>
               <p className="text-gray-600 text-center">
-                Her öğrencinin ihtiyaçlarına, seviyesine ve öğrenme hızına göre özelleştirilmiş eğitim planları.
+                {t('personalizedDescription')}
               </p>
             </div>
             
@@ -174,9 +182,9 @@ export default function About() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3 text-center">Erişilebilir</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-3 text-center">{t('accessibleTitle')}</h3>
               <p className="text-gray-600 text-center">
-                Herkesin kolayca erişebileceği, uygun fiyatlı ve kaliteli eğitim fırsatları sunuyoruz.
+                {t('accessibleDescription')}
               </p>
             </div>
           </div>
@@ -191,12 +199,12 @@ export default function About() {
               <div className="relative">
                 <div className="absolute -inset-4 bg-green-200 rounded-lg transform -rotate-3"></div>
                 <div className="relative bg-white rounded-lg p-8 shadow-xl">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-6">Hikayemiz</h2>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-6">{t('ourStoryTitle')}</h2>
                   <p className="text-gray-600 mb-6">
-                    SpeakNest, 2020 yılında dil öğreniminde karşılaşılan zorlukları aşmak amacıyla kuruldu. Amacımız, konuşma pratiğinin önündeki bariyerleri kaldırmak ve herkese ana dili İngilizce olan eğitmenlerle pratik yapma fırsatı sunmaktı.
+                    {t('ourStoryDescription1')}
                   </p>
                   <p className="text-gray-600">
-                    Başlangıçta küçük bir ekiple yola çıktık, ancak kısa sürede büyük bir topluluk haline geldik. Bugün, dünya genelinde binlerce öğrenci ve yüzlerce eğitmenle, dil öğrenimi yolculuğunda öğrencilere rehberlik ediyoruz.
+                    {t('ourStoryDescription2')}
                   </p>
                 </div>
               </div>
@@ -206,22 +214,22 @@ export default function About() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-white p-6 rounded-lg shadow-lg">
                   <div className="text-4xl font-bold text-green-600 mb-2">5K+</div>
-                  <div className="text-gray-600">Aktif Öğrenci</div>
+                  <div className="text-gray-600">{t('activeStudents')}</div>
                 </div>
                 
                 <div className="bg-white p-6 rounded-lg shadow-lg">
                   <div className="text-4xl font-bold text-green-600 mb-2">200+</div>
-                  <div className="text-gray-600">Eğitmen</div>
+                  <div className="text-gray-600">{t('teachers')}</div>
                 </div>
                 
                 <div className="bg-white p-6 rounded-lg shadow-lg">
                   <div className="text-4xl font-bold text-green-600 mb-2">20+</div>
-                  <div className="text-gray-600">Ülke</div>
+                  <div className="text-gray-600">{t('countries')}</div>
                 </div>
                 
                 <div className="bg-white p-6 rounded-lg shadow-lg">
                   <div className="text-4xl font-bold text-green-600 mb-2">1M+</div>
-                  <div className="text-gray-600">Ders Saati</div>
+                  <div className="text-gray-600">{t('lessonHours')}</div>
                 </div>
               </div>
             </div>
@@ -233,9 +241,9 @@ export default function About() {
       <div className="py-16 md:py-24 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Ekibimizle Tanışın</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">{t('meetOurTeam')}</h2>
             <p className="text-xl text-gray-600">
-              SpeakNest'i daha iyi bir öğrenme platformu haline getirmek için çalışan tutkulu ekibimiz.
+              {t('teamDescription')}
             </p>
           </div>
           
@@ -247,10 +255,10 @@ export default function About() {
                 </svg>
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-1">Ahmet Yılmaz</h3>
-                <p className="text-green-600 mb-4">Kurucu & CEO</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-1">{t('founderName')}</h3>
+                <p className="text-green-600 mb-4">{t('founderTitle')}</p>
                 <p className="text-gray-600">
-                  10+ yıl eğitim teknolojileri alanında deneyime sahip.
+                  {t('founderDescription')}
                 </p>
               </div>
             </div>
@@ -262,10 +270,10 @@ export default function About() {
                 </svg>
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-1">Zeynep Kaya</h3>
-                <p className="text-green-600 mb-4">Eğitim Direktörü</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-1">{t('educationDirectorName')}</h3>
+                <p className="text-green-600 mb-4">{t('educationDirectorTitle')}</p>
                 <p className="text-gray-600">
-                  Cambridge Üniversitesi İngilizce Eğitimi Bölümü mezunu.
+                  {t('educationDirectorDescription')}
                 </p>
               </div>
             </div>
@@ -277,10 +285,10 @@ export default function About() {
                 </svg>
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-1">Mehmet Demir</h3>
-                <p className="text-green-600 mb-4">Teknoloji Direktörü</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-1">{t('techDirectorName')}</h3>
+                <p className="text-green-600 mb-4">{t('techDirectorTitle')}</p>
                 <p className="text-gray-600">
-                  Yapay zeka ve eğitim teknolojileri konusunda uzman.
+                  {t('techDirectorDescription')}
                 </p>
               </div>
             </div>
@@ -292,10 +300,10 @@ export default function About() {
                 </svg>
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-1">Ayşe Şahin</h3>
-                <p className="text-green-600 mb-4">Müşteri Deneyimi Uzmanı</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-1">{t('customerExperienceName')}</h3>
+                <p className="text-green-600 mb-4">{t('customerExperienceTitle')}</p>
                 <p className="text-gray-600">
-                  Öğrenci deneyimini mükemmelleştirmek için çalışıyor.
+                  {t('customerExperienceDescription')}
                 </p>
               </div>
             </div>
@@ -306,9 +314,9 @@ export default function About() {
       {/* Call to Action */}
       <div className="py-16 bg-gradient-to-r from-green-600 to-green-800 text-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">Bizimle Yolculuğa Çıkın</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">{t('joinJourney')}</h2>
           <p className="text-xl max-w-3xl mx-auto mb-10">
-            Dil öğrenmek yalnızca bir beceri kazanmak değil, dünyaya açılan yeni bir kapıdır. Bu yolculukta sizinle birlikte olmaktan mutluluk duyarız.
+            {t('journeyDescription')}
           </p>
           
           <div className="flex flex-col sm:flex-row justify-center gap-4">
@@ -316,13 +324,13 @@ export default function About() {
               href="/register"
               className="px-8 py-4 bg-white text-green-700 rounded-lg shadow hover:bg-green-50 transition-colors text-lg font-medium"
             >
-              Ücretsiz Demo Ders
+              {t('freeDemo')}
             </Link>
             <Link
               href="/contact"
               className="px-8 py-4 bg-transparent border-2 border-white text-white rounded-lg shadow hover:bg-white/10 transition-colors text-lg font-medium"
             >
-              Bizimle İletişime Geçin
+              {t('contactUsButton')}
             </Link>
           </div>
         </div>
@@ -333,26 +341,26 @@ export default function About() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-6 md:mb-0">
-              <h2 className="text-2xl font-semibold">SpeakNest</h2>
-              <p className="mt-2 text-gray-400">© 2023 Tüm Hakları Saklıdır</p>
+              <h2 className="text-2xl font-semibold">{t('footerAppName')}</h2>
+              <p className="mt-2 text-gray-400">{t('footerCopyright')}</p>
             </div>
             
             <div className="flex space-x-8">
               <div>
-                <h3 className="font-semibold mb-3">Hakkımızda</h3>
+                <h3 className="font-semibold mb-3">{t('footerAbout')}</h3>
                 <ul className="space-y-2">
-                  <li><Link href="/about" className="text-gray-400 hover:text-white">Biz Kimiz</Link></li>
-                  <li><Link href="/teachers" className="text-gray-400 hover:text-white">Eğitmenlerimiz</Link></li>
-                  <li><Link href="/career" className="text-gray-400 hover:text-white">Kariyer</Link></li>
+                  <li><Link href="/about" className="text-gray-400 hover:text-white">{t('footerAboutUs')}</Link></li>
+                  <li><Link href="/teachers" className="text-gray-400 hover:text-white">{t('footerTeachers')}</Link></li>
+                  <li><Link href="/career" className="text-gray-400 hover:text-white">{t('footerCareer')}</Link></li>
                 </ul>
               </div>
               
               <div>
-                <h3 className="font-semibold mb-3">Destek</h3>
+                <h3 className="font-semibold mb-3">{t('footerSupport')}</h3>
                 <ul className="space-y-2">
-                  <li><Link href="/contact" className="text-gray-400 hover:text-white">İletişim</Link></li>
-                  <li><Link href="/faq" className="text-gray-400 hover:text-white">SSS</Link></li>
-                  <li><Link href="/help" className="text-gray-400 hover:text-white">Yardım Merkezi</Link></li>
+                  <li><Link href="/contact" className="text-gray-400 hover:text-white">{t('footerContact')}</Link></li>
+                  <li><Link href="/faq" className="text-gray-400 hover:text-white">{t('footerFaq')}</Link></li>
+                  <li><Link href="/help" className="text-gray-400 hover:text-white">{t('footerHelpCenter')}</Link></li>
                 </ul>
               </div>
             </div>

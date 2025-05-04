@@ -1,7 +1,7 @@
 import { TranslationKey } from './index';
 
 // Arapça çeviriler
-export const translations: Record<TranslationKey, string> = {
+const ar = {
   'appName': 'منصة ممارسة اللغة الإنجليزية',
   'welcome': 'مرحبًا',
   'login': 'تسجيل الدخول',
@@ -127,10 +127,46 @@ export const translations: Record<TranslationKey, string> = {
   'meetingActiveNow': 'هذا الاجتماع نشط حاليًا',
   'copyMeetingLink': 'نسخ رابط الاجتماع',
   'joinMeeting': 'الانضمام إلى الاجتماع',
-  // Header.tsx için yeni çeviriler
   'about': 'حول',
   'pricing': 'التسعير',
   'contact': 'اتصل بنا',
   'hello': 'مرحبًا',
-  'user': 'المستخدم'
-}; 
+  'user': 'المستخدم',
+  'pricingTitle': 'التسعير',
+  'pricingDescription': 'اختر الخطة التي تناسب احتياجاتك',
+  'pricingMonthly': 'شهري',
+  'pricingYearly': 'سنوي',
+  'pricingBasicTitle': 'الأساسي',
+  'pricingBasicPrice': '₺199/شهر',
+  'pricingBasicDescription': 'مثالي للمبتدئين',
+  'pricingPlanBasic': 'الخطة الأساسية',
+  'pricingPlanProfessional': 'الخطة الاحترافية',
+  'pricingPlanPremium': 'الخطة المميزة',
+  'pricingFeatureWeeklyLessons': '{count} دروس في الأسبوع',
+  'pricingFeatureOneOnOne': 'دروس فردية',
+  'pricingFeatureBasicMaterials': 'المواد الأساسية',
+  'pricingFeature247Support': 'دعم على مدار الساعة',
+  'pricingFeatureCertificate': 'شهادة',
+  'pricingFeatureAdvancedMaterials': 'المواد المتقدمة',
+  'pricingFeatureAllMaterials': 'جميع المواد',
+  'pricingFeatureCustomSchedule': 'جدول مخصص',
+  'pricingFeatureUnlimitedLessons': 'دروس غير محدودة',
+  'pricingHeroTitle': 'باقاتنا التعليمية',
+  'pricingHeroDescription': 'ابدأ رحلتك في تعلم اللغة الإنجليزية مع باقاتنا التعليمية المصممة خصيصًا لاحتياجاتك. حقق أهدافك مع معلمينا المحترفين وأساليبنا التعليمية الحديثة.',
+  'pricingPeriodMonthly': 'شهري',
+  'pricingPeriodYearly': 'سنوي',
+  'pricingStartNow': 'ابدأ الآن',
+  'pricingTryFree': 'جرب مجانًا',
+  'pricingMostPopular': 'الأكثر شيوعًا',
+  'pricingCommonFeaturesTitle': 'الميزات المشمولة في جميع الخطط',
+  'pricingCommonFeature1Title': 'مدربون محترفون',
+  'pricingCommonFeature1Description': 'تعامل مع مدربين خبراء وذوي خبرة',
+  'pricingCommonFeature2Title': 'ساعات دراسية مرنة',
+  'pricingCommonFeature2Description': 'خذ الدروس في الأوقات التي تناسبك',
+  'pricingCommonFeature3Title': 'تدريب فردي',
+  'pricingCommonFeature3Description': 'برنامج تدريب شخصي',
+  'pricingCommonFeature4Title': 'محتوى غني',
+  'pricingCommonFeature4Description': 'مواد تدريبية شاملة وحديثة'
+};
+
+export default ar; 
