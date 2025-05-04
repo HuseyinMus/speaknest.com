@@ -1,5 +1,5 @@
 // JWT işlemleri kaldırıldı - server-side'da yapılacak
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://speak-nest-app.vercel.app';
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://speaknest-com.vercel.app';
 const API_PATH = '/api/zoom';
 
 // URL oluşturma yardımcı fonksiyonu

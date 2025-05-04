@@ -90,6 +90,30 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/access-denied', request.url));
   }
 
+  // API rotaları için CORS header'larını ekle
+  if (path.startsWith('/api/')) {
+    const response = NextResponse.next();
+    
+    // CORS header'larını ekle
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    // OPTIONS isteği için özel yanıt
+    if (request.method === 'OPTIONS') {
+      return new NextResponse(null, {
+        status: 204,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        },
+      });
+    }
+    
+    return response;
+  }
+
   // Her şey yolundaysa devam et
   return NextResponse.next();
 }

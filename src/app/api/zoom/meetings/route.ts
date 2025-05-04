@@ -8,6 +8,18 @@ const ZOOM_CLIENT_ID = process.env.ZOOM_CLIENT_ID || '';
 const ZOOM_CLIENT_SECRET = process.env.ZOOM_CLIENT_SECRET || '';
 const ZOOM_ACCOUNT_ID = process.env.ZOOM_ACCOUNT_ID || '';
 
+// CORS headers
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// OPTIONS handler
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 // Zoom OAuth token alma fonksiyonu
 async function getZoomAccessToken(): Promise<string> {
   try {
@@ -81,7 +93,7 @@ export async function POST(request: Request) {
       console.log('Eksik parametre:', { title, startTime });
       return NextResponse.json(
         { error: 'Başlık ve başlangıç zamanı gerekli' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
     
@@ -120,48 +132,23 @@ export async function POST(request: Request) {
     
     console.log('Zoom API yanıt status:', response.status);
 
-    // Yanıt başarılı değilse
     if (!response.ok) {
-      let errorMessage = `HTTP Hata: ${response.status}`;
-      
-      try {
-        const errorData = await response.json();
-        console.error('Zoom API hata yanıtı:', errorData);
-        errorMessage = errorData.message || errorMessage;
-      } catch (jsonError) {
-        console.error('Hata yanıtı JSON olarak ayrıştırılamadı:', jsonError);
-      }
-      
+      const errorData = await response.json();
+      console.error('Zoom API hatası:', errorData);
       return NextResponse.json(
-        { error: `Toplantı oluşturulamadı: ${errorMessage}` },
-        { status: response.status }
+        { error: 'Zoom toplantısı oluşturulamadı' },
+        { status: response.status, headers: corsHeaders }
       );
     }
 
-    // Yanıt başarılıysa
-    try {
-      const meetingData = await response.json();
-      console.log('Zoom API başarılı yanıt:', meetingData);
-      
-      return NextResponse.json({
-        id: meetingData.id,
-        join_url: meetingData.join_url,
-        start_url: meetingData.start_url,
-        password: meetingData.password,
-      });
-    } catch (jsonError) {
-      console.error('Başarılı yanıt JSON olarak ayrıştırılamadı:', jsonError);
-      return NextResponse.json(
-        { error: 'Toplantı yanıtı işlenirken hata oluştu' },
-        { status: 500 }
-      );
-    }
+    const data = await response.json();
+    return NextResponse.json(data, { headers: corsHeaders });
 
   } catch (error) {
-    console.error('Genel hata:', error);
+    console.error('Toplantı oluşturma hatası:', error);
     return NextResponse.json(
-      { error: `Toplantı oluşturulurken bir hata oluştu: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}` },
-      { status: 500 }
+      { error: 'Toplantı oluşturulurken bir hata oluştu' },
+      { status: 500, headers: corsHeaders }
     );
   }
 }
