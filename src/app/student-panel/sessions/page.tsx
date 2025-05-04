@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { auth, db } from '@/lib/firebase/config';
 import { useRouter } from 'next/navigation';
 import { collection, query, where, getDocs, orderBy, doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
-import { useLanguage } from '@/lib/context/LanguageContext';
+import { useLanguage, TranslationKey } from '@/lib/context/LanguageContext';
 import { useToast } from '@/lib/context/ToastContext';
 import { Shimmer, ShimmerCard, ShimmerList } from '@/components/ui/Shimmer';
 import { Calendar, Users, MessageCircle, Clock, CheckSquare, X } from 'lucide-react';
@@ -83,10 +83,10 @@ export default function SessionsPage() {
       setLoading(false);
     } catch (err) {
       console.error('Toplantı verileri alınamadı:', err);
-      setError(t('meetingsDataError', 'Toplantı verileri alınırken bir hata oluştu.'));
+      setError(t('sessionCheckError', { default: 'Oturum kontrolü sırasında bir hata oluştu.' }));
       setLoading(false);
     }
-  }, [t]);
+  }, []);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -102,7 +102,7 @@ export default function SessionsPage() {
         return () => unsubscribe();
       } catch (err) {
         console.error('Auth kontrolü sırasında hata:', err);
-        setError(t('sessionCheckError', 'Oturum kontrolü sırasında bir hata oluştu.'));
+        setError(t('sessionCheckError', { default: 'Oturum kontrolü sırasında bir hata oluştu.' }));
         setLoading(false);
       }
     };
@@ -112,7 +112,7 @@ export default function SessionsPage() {
 
   // Toplantı seviyesi için çevirileri manuel olarak yapan yardımcı fonksiyon
   const getLevelTranslation = (level: string) => {
-    return t(`level_${level}`, getLevelFallback(level));
+    return t(`level_${level}`, { default: getLevelFallback(level) });
   };
 
   // Level için fallback değerlerini döndüren yardımcı fonksiyon
@@ -128,7 +128,7 @@ export default function SessionsPage() {
 
   // Toplantı konusu için çevirileri manuel olarak yapan yardımcı fonksiyon
   const getTopicTranslation = (topic: string) => {
-    return t(`topic_${topic}`, getTopicFallback(topic));
+    return t(`topic_${topic}`, { default: getTopicFallback(topic) });
   };
 
   // Topic için fallback değerlerini döndüren yardımcı fonksiyon
@@ -157,11 +157,9 @@ export default function SessionsPage() {
       const user = auth.currentUser;
       if (!user) {
         console.error('Kullanıcı oturumu bulunamadı');
-        toast.error(t('sessionCheckError'));
+        toast.error('Oturum bulunamadı');
         return;
       }
-
-      console.log('Kullanıcı:', user.uid);
 
       // Toplantının başlamasına 30 dakikadan az kaldıysa kayıt yapılamaz
       const now = new Date();
@@ -174,51 +172,36 @@ export default function SessionsPage() {
       // Toplantı geçmiş mi kontrol et
       if (timeDiff < 0) {
         console.log('Toplantı geçmiş');
-        toast.error(t('meetingPassed', 'Bu toplantı geçmiş.'));
+        toast.error('Bu toplantı geçmiş. Geçmiş toplantılara kayıt yapılamaz.');
         return;
       }
 
       if (minutesDiff < 30) {
-        toast.error(t('registrationClosed', 'Toplantıya kayıt olmak için çok geç. Toplantı başlamasına 30 dakikadan az kaldı.'));
+        console.log('30 dakikadan az kaldı');
+        const message = `Bu toplantıya kayıt olamazsınız çünkü toplantı başlamasına ${Math.ceil(minutesDiff)} dakika kaldı. Toplantı başlamasına 30 dakikadan az kaldığında kayıt yapılamaz.`;
+        toast.error(message);
         return;
       }
 
       // Toplantı dolu mu kontrol et
       if (meeting.participants.length >= meeting.maxParticipants) {
-        console.log('Toplantı dolu:', meeting.participants.length, '/', meeting.maxParticipants);
-        toast.error(t('meetingFull', 'Bu toplantı dolu.'));
+        console.log('Toplantı dolu');
+        toast.error('Bu toplantı dolu.');
         return;
       }
 
       // Kullanıcı zaten kayıtlı mı kontrol et
       if (meeting.participants.some(p => p.id === user.uid)) {
         console.log('Kullanıcı zaten kayıtlı');
-        toast.error(t('alreadyRegistered', 'Bu toplantıya zaten kayıtlısınız.'));
+        toast.error('Bu toplantıya zaten kayıtlısınız.');
         return;
       }
 
-      // 30 dakikadan az kala kayıt olma uyarısı
-      if (minutesDiff < 60) {
-        const message = `
-          ⚠️ Önemli Bilgilendirme ⚠️
-
-          Bu toplantıya kayıt olmak üzeresiniz, ancak toplantı başlamasına ${Math.ceil(minutesDiff)} dakika kaldı.
-
-          Dikkat: Toplantı başlamasına 30 dakikadan az kaldığı için, kayıt olduktan sonra kaydınızı iptal edemeyeceksiniz.
-
-          Devam etmek istiyor musunuz?
-        `;
-        setLateRegistrationMessage(message);
-        setShowLateRegistrationModal(true);
-        setSelectedMeeting(meeting);
-        return;
-      }
-
-      // Normal kayıt işlemi
+      // Kayıt işlemini gerçekleştir
       await processRegistration(meeting);
     } catch (error) {
       console.error('Kayıt hatası:', error);
-      toast.error(t('registrationError', 'Kayıt işlemi sırasında bir hata oluştu.'));
+      toast.error('Kayıt işlemi sırasında bir hata oluştu.');
     }
   };
 
@@ -244,12 +227,12 @@ export default function SessionsPage() {
         registeredMeetings: arrayUnion(meeting.id)
       });
 
-      toast.success(t('registrationSuccess', 'Toplantıya başarıyla kayıt oldunuz.'));
+      toast.success(t('registrationSuccess', { default: 'Toplantıya başarıyla kayıt oldunuz.' }));
       setIsRegistered(true);
       fetchMeetings(); // Toplantı listesini güncelle
     } catch (error) {
       console.error('Kayıt işlemi hatası:', error);
-      toast.error(t('registrationError', 'Kayıt işlemi sırasında bir hata oluştu.'));
+      toast.error(t('registrationError', { default: 'Kayıt işlemi sırasında bir hata oluştu.' }));
     }
   };
 
@@ -269,7 +252,7 @@ export default function SessionsPage() {
       const minutesDiff = timeDiff / (1000 * 60);
 
       if (minutesDiff < 30) {
-        toast.error(t('cancellationClosed', 'Toplantıdan ayrılmak için çok geç. Toplantı başlamasına 30 dakikadan az kaldı.'));
+        toast.error(t('cancellationClosed', { default: 'Toplantıdan ayrılmak için çok geç. Toplantı başlamasına 30 dakikadan az kaldı.' }));
         return;
       }
 
@@ -289,12 +272,12 @@ export default function SessionsPage() {
         registeredMeetings: arrayRemove(meeting.id)
       });
 
-      toast.success(t('cancellationSuccess', 'Toplantıdan ayrıldınız.'));
+      toast.success(t('cancellationSuccess', { default: 'Toplantıdan ayrıldınız.' }));
       setIsRegistered(false);
       fetchMeetings(); // Toplantı listesini güncelle
     } catch (error) {
       console.error('İptal hatası:', error);
-      toast.error(t('cancellationError', 'İptal işlemi sırasında bir hata oluştu.'));
+      toast.error(t('cancellationError', { default: 'İptal işlemi sırasında bir hata oluştu.' }));
     }
   };
 
@@ -336,7 +319,7 @@ export default function SessionsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 p-6">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-slate-800 mb-8">{t('availableSessions', 'Mevcut Toplantılar')}</h1>
+        <h1 className="text-3xl font-bold text-slate-800 mb-8">{t('availableSessions', { default: 'Mevcut Toplantılar' })}</h1>
         
         {meetings.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -393,24 +376,39 @@ export default function SessionsPage() {
                     </div>
 
                     {isUserRegistered ? (
-                      <button
-                        onClick={() => cancelRegistration(meeting)}
-                        className="w-full py-2 px-4 rounded-md bg-red-100 text-red-700 font-medium hover:bg-red-200 transition-colors"
-                        disabled={!canRegister}
-                      >
-                        {t('cancelRegistration', 'Kaydı İptal Et')}
-                      </button>
+                      <div className="relative group">
+                        <button
+                          onClick={() => cancelRegistration(meeting)}
+                          className="w-full py-2 px-4 rounded-md bg-red-100 text-red-700 font-medium hover:bg-red-200 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                          disabled={!canRegister}
+                        >
+                          {t('cancelRegistration', { default: 'Kaydı İptal Et' })}
+                        </button>
+                        {!canRegister && (
+                          <div className="absolute bottom-full left-0 mb-2 w-full bg-gray-800 text-white text-sm rounded-md p-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                            {`Toplantı başlamasına ${Math.ceil(minutesDiff)} dakika kaldı. Toplantı başlamasına 30 dakikadan az kaldığında kayıt iptal edilemez.`}
+                          </div>
+                        )}
+                      </div>
                     ) : (
-                      <button
-                        onClick={() => {
-                          setSelectedMeeting(meeting);
-                          setShowRegistrationModal(true);
-                        }}
-                        className="w-full py-2 px-4 rounded-md bg-emerald-500 text-white font-medium hover:bg-emerald-600 transition-colors"
-                        disabled={!canRegister || meeting.participants.length >= meeting.maxParticipants}
-                      >
-                        {t('register', 'Kayıt Ol')}
-                      </button>
+                      <div className="relative group">
+                        <button
+                          onClick={() => {
+                            console.log('Kayıt butonuna tıklandı');
+                            setSelectedMeeting(meeting);
+                            setShowRegistrationModal(true);
+                          }}
+                          className="w-full py-2 px-4 rounded-md bg-emerald-500 text-white font-medium hover:bg-emerald-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                          disabled={!canRegister || meeting.participants.length >= meeting.maxParticipants}
+                        >
+                          {t('register', { default: 'Kayıt Ol' })}
+                        </button>
+                        {!canRegister && (
+                          <div className="absolute bottom-full left-0 mb-2 w-full bg-gray-800 text-white text-sm rounded-md p-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                            {`Toplantı başlamasına ${Math.ceil(minutesDiff)} dakika kaldı. Toplantı başlamasına 30 dakikadan az kaldığında kayıt yapılamaz.`}
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -428,26 +426,28 @@ export default function SessionsPage() {
       {showRegistrationModal && selectedMeeting && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold text-slate-800 mb-4">{t('confirmRegistration', 'Kayıt Onayı')}</h3>
+            <h3 className="text-xl font-bold text-slate-800 mb-4">{t('confirmRegistration', { default: 'Kayıt Onayı' })}</h3>
             <p className="text-slate-600 mb-6">
-              {t('registrationConfirmation', 'Bu toplantıya kayıt olmak istediğinizden emin misiniz?')}
+              {t('registrationConfirmation', { default: 'Bu toplantıya kayıt olmak istediğinizden emin misiniz?' })}
             </p>
             <div className="flex gap-4">
               <button
                 onClick={() => setShowRegistrationModal(false)}
                 className="flex-1 py-2 px-4 rounded-md bg-slate-100 text-slate-700 font-medium hover:bg-slate-200 transition-colors"
               >
-                {t('cancel', 'İptal')}
+                {t('cancel', { default: 'İptal' })}
               </button>
               <button
                 onClick={() => {
+                  console.log('Modal onay butonuna tıklandı');
                   if (selectedMeeting) {
                     registerToMeeting(selectedMeeting);
+                    setShowRegistrationModal(false);
                   }
                 }}
                 className="flex-1 py-2 px-4 rounded-md bg-emerald-500 text-white font-medium hover:bg-emerald-600 transition-colors"
               >
-                {t('confirm', 'Onayla')}
+                {t('confirm', { default: 'Onayla' })}
               </button>
             </div>
           </div>
@@ -473,10 +473,11 @@ export default function SessionsPage() {
                 }}
                 className="flex-1 py-2 px-4 rounded-md bg-slate-100 text-slate-700 font-medium hover:bg-slate-200 transition-colors"
               >
-                {t('cancel', 'İptal')}
+                {t('cancel', { default: 'İptal' })}
               </button>
               <button
                 onClick={() => {
+                  console.log('Modal onay butonuna tıklandı');
                   if (selectedMeeting) {
                     processRegistration(selectedMeeting);
                     setShowLateRegistrationModal(false);
@@ -484,7 +485,7 @@ export default function SessionsPage() {
                 }}
                 className="flex-1 py-2 px-4 rounded-md bg-emerald-500 text-white font-medium hover:bg-emerald-600 transition-colors"
               >
-                {t('confirm', 'Onayla')}
+                {t('confirm', { default: 'Onayla' })}
               </button>
             </div>
           </div>
