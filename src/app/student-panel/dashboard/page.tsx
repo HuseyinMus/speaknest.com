@@ -65,6 +65,18 @@ interface Statistics {
   };
 }
 
+// Bilimsel bilgiler dizisi
+const scientificTips = [
+  "Düzenli aralıklı tekrar (SRS) yöntemi, uzun süreli hafızayı güçlendirir ve kelime öğrenimini hızlandırır.",
+  "Kısa ve sık tekrarlar, uzun süreli öğrenmede tek seferde çalışmaktan daha etkilidir.",
+  "Kelimeyi yüksek sesle tekrar etmek, hem telaffuz hem de hafıza için faydalıdır.",
+  "Görsel ve işitsel materyallerle çalışmak, kelime öğrenimini %60'a kadar hızlandırabilir.",
+  "Her gün az da olsa tekrar yapmak, öğrenme motivasyonunu ve kalıcılığını artırır.",
+  "Yanlış yapmak öğrenmenin doğal bir parçasıdır; hatalardan korkma, onları fırsata çevir!",
+  "Kendi cümlelerinle kelimeyi kullanmak, pasif bilgiyi aktif hale getirir.",
+  "Uyumadan önce yapılan tekrarlar, bilgilerin uzun süreli hafızaya geçmesini kolaylaştırır."
+];
+
 export default function Dashboard() {
   const { t } = useLanguage();
   const router = useRouter();
@@ -94,6 +106,7 @@ export default function Dashboard() {
   const [badges, setBadges] = useState<string[]>([]);
   const [showCongratsModal, setShowCongratsModal] = useState(false);
   const DAILY_GOAL = 10;
+  const [randomTip, setRandomTip] = useState(scientificTips[0]);
 
   // Kullanıcı bilgilerini ve verileri yükle
   useEffect(() => {
@@ -344,6 +357,11 @@ export default function Dashboard() {
     return `${minutes} dakika`;
   };
 
+  // Bilimsel bilgiler dizisi
+  useEffect(() => {
+    setRandomTip(scientificTips[Math.floor(Math.random() * scientificTips.length)]);
+  }, []);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -354,267 +372,147 @@ export default function Dashboard() {
   
   return (
     <div className="flex-1 min-h-screen bg-gradient-to-br from-emerald-50 via-white to-slate-100 p-4 md:p-8">
-      {/* Hoş geldin kartı */}
-      <div className="max-w-5xl mx-auto grid grid-cols-1 gap-8">
-        <div className="bg-white/90 rounded-2xl shadow-xl p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative overflow-hidden">
-          <div className="flex items-center gap-4 mb-4 md:mb-0">
-            {userProfile?.photoURL && (
-              <img src={userProfile.photoURL} alt="Profil" className="w-16 h-16 rounded-full border-4 border-emerald-200 shadow" />
-            )}
-            <div>
-              <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 mb-1 flex items-center gap-2">
-                <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-100">
-                  <Calendar size={28} className="text-emerald-500" />
-                </span>
-                Merhaba, {userProfile?.displayName || userProfile?.firstName || t('student')}!
-              </h2>
-              <div className="flex items-center gap-2 text-slate-600 text-base md:text-lg">
-                <span className="font-semibold">{userProfile?.englishLevel ? `Seviye: ${userProfile.englishLevel}` : ''}</span>
-                {streak > 0 && (
-                  <span className="ml-2 px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold flex items-center gap-1 animate-pulse">🔥 {streak} gün seri</span>
-                )}
-              </div>
-              {badges.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {badges.map((badge, i) => (
-                    <span key={i} className="bg-gradient-to-r from-emerald-400 to-blue-400 text-white px-2 py-0.5 rounded-full text-xs font-semibold shadow animate-fade-in">🏅 {badge}</span>
-                  ))}
-                </div>
-              )}
-              {/* Dinamik motivasyonel mesajlar */}
-              <div className="mt-2 text-emerald-700 font-semibold text-base flex items-center gap-2">
-                {todayReviews >= DAILY_GOAL ? (
-                  <>
-                    <span>Hedefini tamamladın, harikasın! 🚀</span>
-                  </>
-                ) : streak >= 7 ? (
-                  <>
-                    <span>7 gün üst üste çalıştın, mükemmel bir alışkanlık!</span>
-                  </>
-                ) : streak >= 3 ? (
-                  <>
-                    <span>Serini bozma, başarıya çok yakınsın!</span>
-                  </>
-                ) : todayReviews > 0 ? (
-                  <>
-                    <span>Bugün {todayReviews} tekrar yaptın, devam et!</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Hadi bugün de bir adım at, başarı seni bekliyor!</span>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col gap-2 items-end">
-            <div className="flex gap-2 flex-wrap">
-              <button 
-                className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors text-sm font-medium shadow-md"
-                onClick={() => router.push('/student-panel/vocabulary')}
-              >
-                Kelime Paneli
-              </button>
-              <button 
-                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm font-medium shadow-md"
-                onClick={() => router.push('/student-panel/vocabulary/groups')}
-              >
-                Kelime Grupları
-              </button>
-              <button 
-                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors text-sm font-medium shadow-md"
-                onClick={() => router.push('/student-panel/vocabulary?filter=due')}
-              >
-                Tekrar Zamanı Gelenler
-              </button>
-            </div>
-            <div className="flex items-center gap-2 mt-2">
-              <Bell size={20} className="text-amber-500 animate-bounce" />
-              <span className="text-sm text-slate-700 font-medium">{totalDueWords > 0 ? `${totalDueWords} kelimenin tekrarı geldi!` : 'Tüm kelimeler güncel 🎉'}</span>
-            </div>
-          </div>
-          {/* Hedef tamamlandıysa animasyonlu emoji ve tebrik */}
-          {todayReviews >= DAILY_GOAL && (
-            <div className="absolute right-4 bottom-4 animate-bounce text-4xl select-none pointer-events-none">🎉</div>
-          )}
-          <div className="absolute left-0 bottom-0 w-full h-2 bg-gradient-to-r from-emerald-200 via-purple-200 to-blue-200 rounded-b-2xl" />
-          {/* Bilimsel bilgi kutusu */}
-          <div className="absolute top-4 right-4 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 shadow text-emerald-800 text-xs font-medium max-w-xs animate-fade-in">
-            <span className="font-bold">Bilimsel Bilgi:</span> Düzenli aralıklı tekrar (SRS) yöntemi, uzun süreli hafızayı güçlendirir ve kelime öğrenimini hızlandırır. Bugün küçük bir tekrar bile büyük fark yaratır!
-          </div>
-        </div>
+      {/* --- Modern Özet Panel (istatistikler + yaklaşan toplantılar) alanını tamamen kaldırıyorum --- */}
+      {/* <div className="w-full max-w-3xl mx-auto my-6"> ... </div> */}
 
-        {/* İstatistik Kartları */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center">
-            <span className="bg-emerald-100 text-emerald-700 rounded-full p-3 mb-2">
-              <CheckCircle size={28} className="text-emerald-600" />
-            </span>
-            <div className="text-lg font-bold text-emerald-800">Toplam Katıldığın Toplantı</div>
-            <div className="text-2xl font-extrabold text-emerald-600 mt-1">{statistics.totalMeetings}</div>
-          </div>
-          <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center">
-            <span className="bg-blue-100 text-blue-700 rounded-full p-3 mb-2">
-              <MessageCircle size={28} className="text-blue-600" />
-            </span>
-            <div className="text-lg font-bold text-blue-800">Bu Ayki Toplantı</div>
-            <div className="text-2xl font-extrabold text-blue-600 mt-1">{statistics.monthlyMeetings}</div>
-          </div>
-          <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center">
-            <span className="bg-yellow-100 text-yellow-700 rounded-full p-3 mb-2">
-              <Star size={28} className="text-yellow-600" />
-            </span>
-            <div className="text-lg font-bold text-yellow-800">Favori Toplantılar</div>
-            <div className="text-2xl font-extrabold text-yellow-600 mt-1">{favoriteMeetings.length}</div>
-          </div>
+      {/* --- Dikkat çekici Yaklaşan Toplantılar alanı --- */}
+      <div className="w-full max-w-4xl mx-auto mt-6 mb-8">
+        <div className="flex items-center gap-3 mb-4">
+          <Clock size={28} className="text-indigo-500" />
+          <h2 className="text-2xl font-extrabold text-indigo-700 tracking-tight">Yaklaşan Toplantılar</h2>
         </div>
-
-        {/* Kelime İstatistikleri ve Motivasyonel Alanlar */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl shadow p-6 flex flex-col items-center text-white relative">
-            <span className="absolute top-2 right-2 bg-white/20 rounded-full px-2 text-xs">Günlük Hedef: {DAILY_GOAL}</span>
-            <BookOpen size={32} className="mb-2" />
-            <div className="text-lg font-bold">Bugünkü Tekrar</div>
-            <div className="text-3xl font-extrabold mt-1">{todayReviews}</div>
-            <div className="mt-2 text-sm">{todayReviews >= DAILY_GOAL ? 'Hedef Tamamlandı 🎉' : `${DAILY_GOAL - todayReviews} tekrar kaldı`}</div>
+        {upcomingMeetings.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-10 bg-indigo-50 rounded-2xl shadow-inner">
+            <svg width="80" height="80" fill="none" viewBox="0 0 80 80"><circle cx="40" cy="40" r="40" fill="#e0e7ff"/><path d="M40 24v20l14 8" stroke="#6366f1" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            <div className="text-indigo-700 font-bold text-lg mt-4">Yaklaşan toplantın yok</div>
+            <div className="text-indigo-600 text-sm mb-3">Yeni bir pratik bulmak için hemen keşfet!</div>
+            <button className="px-5 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-base font-semibold shadow transition-colors" onClick={() => router.push('/student-panel/sessions')}>Yeni Pratik Bul</button>
           </div>
-          <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center">
-            <CheckCircle size={32} className="text-emerald-500 mb-2" />
-            <div className="text-lg font-bold text-emerald-800">Öğrenilen Kelime</div>
-            <div className="text-3xl font-extrabold text-emerald-600 mt-1">{totalLearnedWords}</div>
-          </div>
-          <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center">
-            <Clock size={32} className="text-blue-500 mb-2" />
-            <div className="text-lg font-bold text-blue-800">Tekrar Edilecek</div>
-            <div className="text-3xl font-extrabold text-blue-600 mt-1">{totalDueWords}</div>
-          </div>
-          <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center">
-            <TrendingUp size={32} className="text-yellow-500 mb-2" />
-            <div className="text-lg font-bold text-yellow-800">Streak (Seri)</div>
-            <div className="text-3xl font-extrabold text-yellow-600 mt-1">{streak} gün</div>
-          </div>
-        </div>
-        {/* Rozetler ve kutlama animasyonu */}
-        {badges.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-4">
-            {badges.map((badge, i) => (
-              <span key={i} className="bg-gradient-to-r from-emerald-400 to-blue-400 text-white px-3 py-1 rounded-full text-xs font-semibold shadow">🏅 {badge}</span>
-            ))}
-          </div>
-        )}
-        {showCongratsModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <div className="bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center">
-              <h2 className="text-2xl font-bold mb-2 text-emerald-600">Tebrikler! 🎉</h2>
-              <p className="text-slate-700 mb-4">Bugünkü kelime tekrar hedefini tamamladın!</p>
-              <button onClick={() => setShowCongratsModal(false)} className="px-4 py-2 bg-emerald-500 text-white rounded-lg font-medium">Kapat</button>
-            </div>
-          </div>
-        )}
-
-        {/* Kelime Kartları */}
-        <div className="bg-white rounded-2xl shadow-lg border border-purple-100 overflow-hidden">
-          <div className="bg-gradient-to-r from-purple-600 to-indigo-500 px-6 py-3">
-            <h2 className="text-base font-medium text-white flex items-center gap-2">
-              <BookOpen size={18} /> {t('vocabularyCards')}
-            </h2>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="border border-purple-100 rounded-lg p-4 hover:bg-purple-50 transition-colors">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-purple-700">Günlük Kelimeler</span>
-                  <span className="text-xs text-purple-500">5/10</span>
-                </div>
-                <div className="h-2 bg-purple-100 rounded-full">
-                  <div className="h-2 bg-purple-500 rounded-full" style={{ width: '50%' }}></div>
-                </div>
-              </div>
-              <div className="border border-purple-100 rounded-lg p-4 hover:bg-purple-50 transition-colors">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-purple-700">Öğrenilen Kelimeler</span>
-                  <span className="text-xs text-purple-500">150</span>
-                </div>
-                <div className="h-2 bg-purple-100 rounded-full">
-                  <div className="h-2 bg-purple-500 rounded-full" style={{ width: '75%' }}></div>
-                </div>
-              </div>
-              <div className="border border-purple-100 rounded-lg p-4 hover:bg-purple-50 transition-colors">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-purple-700">Tekrar Edilecek</span>
-                  <span className="text-xs text-purple-500">25</span>
-                </div>
-                <div className="h-2 bg-purple-100 rounded-full">
-                  <div className="h-2 bg-purple-500 rounded-full" style={{ width: '30%' }}></div>
-                </div>
-              </div>
-            </div>
-            <div className="mt-4 text-right">
-              <button 
-                className="text-purple-600 hover:text-purple-800 text-sm font-medium transition-colors"
-                onClick={() => router.push('/student-panel/vocabulary')}
-              >
-                {t('viewAllVocabulary')} →
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Yaklaşan Toplantılar */}
-        <div className="bg-white rounded-2xl shadow-lg border border-blue-100 overflow-hidden">
-          <div className="bg-gradient-to-r from-indigo-600 to-blue-500 px-6 py-3">
-            <h2 className="text-base font-medium text-white flex items-center gap-2">
-              <Clock size={18} /> {t('upcomingMeetings')}
-            </h2>
-          </div>
-          <div className="p-6">
-            {upcomingMeetings.length > 0 ? (
-              <div className="space-y-4">
-                {upcomingMeetings.slice(0, 3).map((meeting) => (
-                  <div 
-                    key={meeting.id}
-                    className="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition-colors flex flex-col md:flex-row md:items-center md:justify-between gap-3"
-                  >
-                    <div>
-                      <h3 className="text-lg font-medium text-slate-800">{meeting.title}</h3>
-                      <p className="text-slate-600 text-sm mt-1">{meeting.description}</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                        {getTimeRemaining(meeting.startTime)} sonra
-                      </span>
-                      <button 
-                        className="text-sm px-3 py-1.5 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
-                        onClick={() => router.push(`/meetings/${meeting.id}`)}
-                      >
-                        {t('joinMeeting')}
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 rounded-md bg-blue-50">
-                <p className="text-blue-700">{t('noUpcomingMeetings')}</p>
-                <button 
-                  className="mt-4 px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-500 text-white rounded-md hover:from-indigo-700 hover:to-blue-600 transition-colors text-sm shadow-sm"
-                  onClick={() => router.push('/student-panel/sessions')}
+        ) : (
+          <div className="overflow-x-auto pb-2">
+            <div className="flex gap-4 min-w-[320px]">
+              {upcomingMeetings.slice(0, 5).map((meeting) => (
+                <div
+                  key={meeting.id}
+                  className="min-w-[260px] max-w-xs bg-white border border-indigo-100 rounded-2xl p-4 shadow-md hover:scale-105 hover:shadow-xl transition-transform duration-200 cursor-pointer flex flex-col group"
+                  onClick={() => router.push(`/meetings/${meeting.id}`)}
                 >
-                  {t('findConversationMeeting')}
-                </button>
+                  <div className="font-bold text-indigo-900 text-lg truncate mb-1">{meeting.title}</div>
+                  <div className="text-sm text-indigo-700 truncate mb-2">{meeting.description}</div>
+                  <div className="flex items-center gap-1 text-xs text-indigo-600 mb-3">
+                    <Clock size={14} />
+                    <span>{getTimeRemaining(meeting.startTime)} sonra</span>
+                  </div>
+                  <button
+                    className="mt-auto px-3 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-xs font-medium shadow transition-colors group-hover:scale-105"
+                    onClick={e => { e.stopPropagation(); router.push(`/meetings/${meeting.id}`); }}
+                  >Katıl</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* --- Bilimsel Bilgi kutusunu küçük ve köşede gösterecek şekilde taşıyorum --- */}
+      <div className="relative">
+        {/* Hoş geldin kartı */}
+        <div className="max-w-5xl mx-auto grid grid-cols-1 gap-8">
+          <div className="bg-white/90 rounded-2xl shadow-xl p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative overflow-hidden">
+            <div className="flex items-center gap-4 mb-4 md:mb-0">
+              {userProfile?.photoURL && (
+                <img src={userProfile.photoURL} alt="Profil" className="w-16 h-16 rounded-full border-4 border-emerald-200 shadow" />
+              )}
+              <div>
+                <h2 className="text-xl md:text-2xl font-extrabold text-emerald-700 mb-0 flex items-center gap-2">
+                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100">
+                    <span className="text-lg">👋</span>
+                  </span>
+                  Merhaba, <span className="text-indigo-700">{userProfile?.displayName || userProfile?.firstName || t('student')}</span>!
+                </h2>
+                <div className="mt-1">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-100 via-emerald-50 to-purple-100 shadow text-sm md:text-base font-semibold text-indigo-700 animate-fade-in">
+                    <span className="text-base">🚀</span>
+                    {todayReviews >= DAILY_GOAL ? (
+                      <span>Hedefini tamamladın, harikasın!</span>
+                    ) : streak >= 7 ? (
+                      <span>7 gün üst üste çalıştın, mükemmel bir alışkanlık!</span>
+                    ) : streak >= 3 ? (
+                      <span>Serini bozma, başarıya çok yakınsın!</span>
+                    ) : todayReviews > 0 ? (
+                      <span>Bugün {todayReviews} tekrar yaptın, devam et!</span>
+                    ) : (
+                      <span>Hadi bugün de bir adım at, başarı seni bekliyor!</span>
+                    )}
+                  </div>
+                </div>
               </div>
+            </div>
+            <div className="flex flex-col gap-2 items-end w-full">
+              {/* Mobilde Bilimsel Bilgi kutusu - butonun üstünde */}
+              <div className="block md:hidden max-w-xs mx-auto mb-2 bg-emerald-50/90 border border-emerald-200 rounded-lg px-3 py-1.5 shadow text-emerald-800 text-xs font-medium">
+                <span className="font-bold">Bilimsel Bilgi:</span> {randomTip}
+              </div>
+              <div className="flex items-center gap-2 mt-2">
+                <Bell size={20} className="text-amber-500 animate-bounce" />
+                <span className="text-sm text-slate-700 font-medium">{totalDueWords > 0 ? `${totalDueWords} kelimenin tekrarı geldi!` : 'Tüm kelimeler güncel 🎉'}</span>
+              </div>
+            </div>
+            {/* Hedef tamamlandıysa animasyonlu emoji ve tebrik */}
+            {todayReviews >= DAILY_GOAL && (
+              <div className="absolute right-4 bottom-4 animate-bounce text-4xl select-none pointer-events-none">🎉</div>
             )}
-            <div className="mt-4 text-right">
-              <button 
-                className="text-indigo-600 hover:text-indigo-800 text-sm font-medium transition-colors"
-                onClick={() => router.push('/student-panel/upcoming')}
-              >
-                {t('viewAllUpcomingPractices')} →
-              </button>
+            <div className="absolute left-0 bottom-0 w-full h-2 bg-gradient-to-r from-emerald-200 via-purple-200 to-blue-200 rounded-b-2xl" />
+            {/* Bilimsel Bilgi kutusu - sağ üst köşe */}
+            <div className="hidden md:block absolute top-4 right-4 bg-emerald-50/90 border border-emerald-200 rounded-lg px-3 py-1.5 shadow text-emerald-800 text-xs font-medium max-w-xs z-10">
+              <span className="font-bold">Bilimsel Bilgi:</span> {randomTip}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Kelime İstatistikleri ve Motivasyonel Alanlar */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl shadow p-6 flex flex-col items-center text-white relative">
+          <span className="absolute top-2 right-2 bg-white/20 rounded-full px-2 text-xs">Günlük Hedef: {DAILY_GOAL}</span>
+          <BookOpen size={32} className="mb-2" />
+          <div className="text-lg font-bold">Bugünkü Tekrar</div>
+          <div className="text-3xl font-extrabold mt-1">{todayReviews}</div>
+          <div className="mt-2 text-sm">{todayReviews >= DAILY_GOAL ? 'Hedef Tamamlandı 🎉' : `${DAILY_GOAL - todayReviews} tekrar kaldı`}</div>
+        </div>
+        <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center">
+          <CheckCircle size={32} className="text-emerald-500 mb-2" />
+          <div className="text-lg font-bold text-emerald-800">Öğrenilen Kelime</div>
+          <div className="text-3xl font-extrabold text-emerald-600 mt-1">{totalLearnedWords}</div>
+        </div>
+        <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center">
+          <Clock size={32} className="text-blue-500 mb-2" />
+          <div className="text-lg font-bold text-blue-800">Tekrar Edilecek</div>
+          <div className="text-3xl font-extrabold text-blue-600 mt-1">{totalDueWords}</div>
+        </div>
+        <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center">
+          <TrendingUp size={32} className="text-yellow-500 mb-2" />
+          <div className="text-lg font-bold text-yellow-800">Streak (Seri)</div>
+          <div className="text-3xl font-extrabold text-yellow-600 mt-1">{streak} gün</div>
+        </div>
+      </div>
+      {/* Rozetler ve kutlama animasyonu */}
+      {badges.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-4">
+          {badges.map((badge, i) => (
+            <span key={i} className="bg-gradient-to-r from-emerald-400 to-blue-400 text-white px-3 py-1 rounded-full text-xs font-semibold shadow">🏅 {badge}</span>
+          ))}
+        </div>
+      )}
+      {showCongratsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center">
+            <h2 className="text-2xl font-bold mb-2 text-emerald-600">Tebrikler! 🎉</h2>
+            <p className="text-slate-700 mb-4">Bugünkü kelime tekrar hedefini tamamladın!</p>
+            <button onClick={() => setShowCongratsModal(false)} className="px-4 py-2 bg-emerald-500 text-white rounded-lg font-medium">Kapat</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 

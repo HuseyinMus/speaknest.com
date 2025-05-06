@@ -90,8 +90,6 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
     { id: 'dashboard', label: t('home'), icon: <Home size={18} />, url: '/student-panel/dashboard' },
     { id: 'sessions', label: t('conversationMeetings'), icon: <MessageCircle size={18} />, url: '/student-panel/sessions' },
     { id: 'practice-rooms', label: t('practiceRooms'), icon: <Users size={18} />, url: '/student-panel/practice-rooms' },
-    { id: 'upcoming', label: t('upcomingPractices'), icon: <Clock size={18} />, url: '/student-panel/upcoming' },
-    { id: 'assignments', label: t('assignments'), icon: <FileText size={18} />, url: '/student-panel/assignments' },
     { id: 'vocabulary', label: 'Kelime Öğren', icon: <BookOpen size={18} />, url: '/student-panel/vocabulary' },
     { id: 'profile', label: t('profile'), icon: <User size={18} />, url: '/student-panel/profile' },
     { id: 'statistics', label: t('statistics'), icon: <BarChart size={18} />, url: '/student-panel/statistics' },

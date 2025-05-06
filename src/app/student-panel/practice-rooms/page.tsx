@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Users, Clock, MessageCircle, Video, Calendar, User } from 'lucide-react';
 import { format, isAfter, isBefore } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import OneSignal from 'react-onesignal';
 
 interface UserMeeting {
   id: string;
@@ -71,6 +72,66 @@ export default function PracticeRoomsPage() {
 
     fetchUserMeetings();
   }, [user]);
+
+  // OneSignal başlat
+  useEffect(() => {
+    OneSignal.init({
+      appId: 'ONESIGNAL_APP_ID', // Buraya kendi OneSignal App ID'ni yaz
+      notifyButton: { enable: true },
+      allowLocalhostAsSecureOrigin: true
+    });
+    // Kullanıcı ID'sini almak için window.OneSignal kullan (güvenli yol)
+    setTimeout(() => {
+      if (typeof window !== "undefined" && window.OneSignal) {
+        window.OneSignal.push(function() {
+          if (window.OneSignal.getUserId) {
+            window.OneSignal.getUserId().then(function(userId) {
+              if (userId) {
+                localStorage.setItem('onesignal_user_id', userId);
+              }
+            });
+          } else if (window.OneSignal.getExternalUserId) {
+            window.OneSignal.getExternalUserId().then(function(userId) {
+              if (userId) {
+                localStorage.setItem('onesignal_user_id', userId);
+              }
+            });
+          }
+        });
+      }
+    }, 2000);
+  }, []);
+
+  // Toplantı başlamadan 15 dakika önce bildirim
+  useEffect(() => {
+    if (!meetings.length) return;
+    const now = new Date();
+    meetings.forEach(meeting => {
+      const diffMs = new Date(meeting.startTime).getTime() - now.getTime();
+      const diffMin = diffMs / (1000 * 60);
+      if (diffMin > 0 && diffMin <= 15) {
+        // Uygulama içi bildirim
+        alert(`"${meeting.meetingTitle}" toplantısı 15 dakika içinde başlayacak!`);
+        // OneSignal push bildirimi
+        const onesignalUserId = localStorage.getItem('onesignal_user_id');
+        if (onesignalUserId) {
+          fetch('https://onesignal.com/api/v1/notifications', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Basic ONESIGNAL_REST_API_KEY' // Buraya kendi REST API Key'ini yaz
+            },
+            body: JSON.stringify({
+              app_id: 'ONESIGNAL_APP_ID',
+              include_player_ids: [onesignalUserId],
+              headings: { tr: 'Toplantı Yaklaşıyor!' },
+              contents: { tr: `"${meeting.meetingTitle}" toplantısı 15 dakika içinde başlayacak.` }
+            })
+          });
+        }
+      }
+    });
+  }, [meetings]);
 
   const handleJoinMeeting = (meeting: UserMeeting) => {
     if (meeting.meetUrl) {
@@ -144,7 +205,12 @@ export default function PracticeRoomsPage() {
           <p className="text-slate-600">{t('practiceRoomsDescription', { default: 'Kayıtlı olduğunuz toplantılar burada listelenir.' })}</p>
         </div>
 
-        {meetings.length === 0 ? (
+        {meetings.filter(meeting => {
+          const now = new Date();
+          const startTime = new Date(meeting.startTime);
+          const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
+          return endTime > now;
+        }).length === 0 ? (
           <div className="bg-white rounded-xl shadow-md p-8 text-center">
             <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Calendar className="w-8 h-8 text-slate-400" />
@@ -154,7 +220,12 @@ export default function PracticeRoomsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {meetings.map((meeting) => {
+            {meetings.filter(meeting => {
+              const now = new Date();
+              const startTime = new Date(meeting.startTime);
+              const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
+              return endTime > now;
+            }).map((meeting) => {
               const colors = getLevelColor(meeting.level);
               return (
                 <Card 
