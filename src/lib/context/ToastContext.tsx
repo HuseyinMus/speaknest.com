@@ -3,7 +3,6 @@
 import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { Toaster, toast } from 'sonner';
-import { useLanguage } from './LanguageContext';
 
 interface ToastContextType {
   success: (message: string, options?: any) => void;
@@ -20,8 +19,6 @@ interface ToastProviderProps {
 
 // Client-side portal bileşeni
 function ToasterPortal() {
-  const { currentLanguage } = useLanguage();
-  const isRtl = currentLanguage === 'ar';
   const [mounted, setMounted] = useState(false);
   
   useEffect(() => {
@@ -38,7 +35,7 @@ function ToasterPortal() {
       richColors 
       closeButton 
       duration={3000}
-      dir={isRtl ? 'rtl' : 'ltr'}
+      dir="ltr"
       toastOptions={{
         style: {
           fontSize: '0.875rem',

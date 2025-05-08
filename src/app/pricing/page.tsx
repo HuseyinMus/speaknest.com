@@ -7,10 +7,10 @@ import { auth, db } from '@/lib/firebase/config';
 import { doc, getDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import Header from '@/components/Header';
-import { useLanguage } from '@/lib/context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 
 export default function PricingPage() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [user, setUser] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -205,7 +205,7 @@ export default function PricingPage() {
       {/* Planlar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {plans[selectedPlan].map((plan, index) => (
+          {plans[selectedPlan].map((plan: any, index: number) => (
             <div
               key={index}
               className={`relative bg-white rounded-lg shadow-lg overflow-hidden ${
@@ -224,7 +224,7 @@ export default function PricingPage() {
                   <span className="text-gray-500">/{plan.period}</span>
                 </div>
                 <ul className="mt-6 space-y-4">
-                  {plan.features.map((feature, featureIndex) => (
+                  {plan.features.map((feature: any, featureIndex: number) => (
                     <li key={featureIndex} className="flex items-center">
                       {feature.included ? (
                         <svg className="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">

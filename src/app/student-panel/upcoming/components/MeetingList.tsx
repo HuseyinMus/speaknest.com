@@ -3,7 +3,7 @@ import { MeetingCard } from './MeetingCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar } from 'lucide-react';
-import { useLanguage } from '@/lib/context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 
 interface MeetingListProps {
   meetings: Meeting[];
@@ -13,7 +13,7 @@ interface MeetingListProps {
 }
 
 export function MeetingList({ meetings, favoriteMeetings, onJoin, onFavorite }: MeetingListProps) {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
 
   if (meetings.length === 0) {
     return (

@@ -1,21 +1,14 @@
 'use client';
 
-import { I18nextProvider } from 'react-i18next';
-import i18n from '@/lib/i18n';
-import { LanguageProvider } from '@/lib/context/LanguageContext';
-import { ToastProvider } from '@/lib/context/ToastContext';
 import { AuthProvider } from '@/lib/context/AuthContext';
+import { ToastProvider } from '@/lib/context/ToastContext';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <I18nextProvider i18n={i18n}>
-      <LanguageProvider>
-        <AuthProvider>
-          <ToastProvider>
-            {children}
-          </ToastProvider>
-        </AuthProvider>
-      </LanguageProvider>
-    </I18nextProvider>
+    <AuthProvider>
+      <ToastProvider>
+        {children}
+      </ToastProvider>
+    </AuthProvider>
   );
 } 

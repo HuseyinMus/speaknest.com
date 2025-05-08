@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useLanguage } from '@/lib/context/LanguageContext';
 import { useAuth } from '@/lib/context/AuthContext';
 import { collection, query, getDocs, doc, getDoc, where, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
@@ -20,7 +19,6 @@ interface WordGroup {
 }
 
 export default function VocabularyPage() {
-  const { t } = useLanguage();
   const router = useRouter();
   const { user } = useAuth();
   

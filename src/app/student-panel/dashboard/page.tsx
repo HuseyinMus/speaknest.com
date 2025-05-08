@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { auth, db } from '@/lib/firebase/config';
 import { useRouter } from 'next/navigation';
-import { useLanguage } from '@/lib/context/LanguageContext';
 import { collection, query, where, getDocs, orderBy, doc, getDoc } from 'firebase/firestore';
 import { Calendar, Users, Clock, Star, TrendingUp, Award, Bell, MessageCircle, CheckCircle, BookOpen } from 'lucide-react';
 import { User } from 'firebase/auth';
@@ -78,7 +77,6 @@ const scientificTips = [
 ];
 
 export default function Dashboard() {
-  const { t } = useLanguage();
   const router = useRouter();
   
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -428,7 +426,7 @@ export default function Dashboard() {
                   <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100">
                     <span className="text-lg">👋</span>
                   </span>
-                  Merhaba, <span className="text-indigo-700">{userProfile?.displayName || userProfile?.firstName || t('student')}</span>!
+                  Merhaba, <span className="text-indigo-700">{userProfile?.displayName || userProfile?.firstName || 'Öğrenci'}</span>!
                 </h2>
                 <div className="mt-1">
                   <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-100 via-emerald-50 to-purple-100 shadow text-sm md:text-base font-semibold text-indigo-700 animate-fade-in">

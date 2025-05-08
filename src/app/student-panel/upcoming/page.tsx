@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useLanguage } from '@/lib/context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import { Meeting } from '@/lib/types';
 import { MeetingList } from './components/MeetingList';
 import { db, collections } from '@/lib/firebase/config';
@@ -9,7 +9,7 @@ import { collection, query, where, getDocs, doc, getDoc, updateDoc } from 'fireb
 import { useAuth } from '@/lib/context/AuthContext';
 
 export default function UpcomingMeetingsPage() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [favoriteMeetings, setFavoriteMeetings] = useState<string[]>([]);

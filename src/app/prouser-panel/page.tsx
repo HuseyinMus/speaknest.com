@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { doc, getDoc, collection, query, where, getDocs, orderBy, addDoc, serverTimestamp } from 'firebase/firestore';
 import Image from 'next/image';
 import { Menu, X, Home, MessageCircle, Users, User, BarChart, Clock, Settings, LogOut, Calendar, CheckSquare, Plus, MinusCircle } from 'lucide-react';
-import { useLanguage } from '@/lib/context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useToast } from '@/lib/context/ToastContext';
 import { Shimmer, ShimmerCard, ShimmerList } from '@/components/ui/Shimmer';
@@ -58,7 +58,7 @@ interface FirebaseError extends Error {
 }
 
 export default function ProUserPanel() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -719,7 +719,7 @@ interface CreateMeetingFormProps {
 }
 
 function CreateMeetingForm({ userId, userProfile, setActiveTab }: CreateMeetingFormProps) {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const toast = useToast();
   
   // Form State

@@ -11,7 +11,11 @@ const nextConfig = {
     domains: ['lh3.googleusercontent.com'],
     unoptimized: true
   },
-  swcMinify: false
+  swcMinify: true,
+  // i18n: {
+  //   locales: ['tr', 'en'],
+  //   defaultLocale: 'tr',
+  // },
 };
 
 module.exports = nextConfig; 

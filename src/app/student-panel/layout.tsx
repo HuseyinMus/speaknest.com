@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { auth } from '@/lib/firebase/config';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { Menu, X, Home, MessageCircle, Users, FileText, User, BarChart, Clock, Settings, LogOut, BookOpen, AlertTriangle } from 'lucide-react';
-import { useLanguage } from '@/lib/context/LanguageContext';
 import { RoleBasedAccess, UserRole, PagePermissions } from '@/lib/auth/rbac';
 
 // Kullanıcı profili interface'i
@@ -21,8 +20,8 @@ interface UserProfile {
 }
 
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
-  const { t } = useLanguage();
   const router = useRouter();
+  const pathname = usePathname();
   
   // Temel state'ler
   const [loading, setLoading] = useState(true);
@@ -87,21 +86,20 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
 
   // Menü öğeleri - burada hem başlık hem de yönlendirme URL'lerini tanımlıyoruz
   const menuItems = [
-    { id: 'dashboard', label: t('home'), icon: <Home size={18} />, url: '/student-panel/dashboard' },
-    { id: 'sessions', label: t('conversationMeetings'), icon: <MessageCircle size={18} />, url: '/student-panel/sessions' },
-    { id: 'practice-rooms', label: t('practiceRooms'), icon: <Users size={18} />, url: '/student-panel/practice-rooms' },
+    { id: 'dashboard', label: 'Ana Sayfa', icon: <Home size={18} />, url: '/student-panel/dashboard' },
+    { id: 'sessions', label: 'Konuşma ve Toplantılar', icon: <MessageCircle size={18} />, url: '/student-panel/sessions' },
+    { id: 'practice-rooms', label: 'Uygulama Odaları', icon: <Users size={18} />, url: '/student-panel/practice-rooms' },
     { id: 'vocabulary', label: 'Kelime Öğren', icon: <BookOpen size={18} />, url: '/student-panel/vocabulary' },
-    { id: 'profile', label: t('profile'), icon: <User size={18} />, url: '/student-panel/profile' },
-    { id: 'statistics', label: t('statistics'), icon: <BarChart size={18} />, url: '/student-panel/statistics' },
-    { id: 'settings', label: t('settings'), icon: <Settings size={18} />, url: '/student-panel/settings' },
+    { id: 'profile', label: 'Profil', icon: <User size={18} />, url: '/student-panel/profile' },
+    { id: 'statistics', label: 'İstatistikler', icon: <BarChart size={18} />, url: '/student-panel/statistics' },
+    { id: 'settings', label: 'Ayarlar', icon: <Settings size={18} />, url: '/student-panel/settings' },
   ];
   
   // Geçerli aktif sekmeyi yönlendirmeden belirleyin
   useEffect(() => {
-    const path = window.location.pathname;
-    const currentPath = path.split('/').pop() || 'dashboard';
-    setActiveTab(currentPath);
-  }, []);
+    const match = pathname.match(/^\/student-panel\/(\w+)/);
+    setActiveTab(match ? match[1] : 'dashboard');
+  }, [pathname]);
 
   // Sadece kullanıcının erişim yetkisi olan menü öğelerini filtrele
   const filteredMenuItems = menuItems.filter(item => 
@@ -168,7 +166,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
     <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row">
       {/* Mobil menü butonu */}
       <div className="bg-white p-4 flex justify-between items-center md:hidden border-b shadow-sm sticky top-0 z-50">
-        <h1 className="text-lg font-semibold text-slate-800">{t('appName')}</h1>
+        <h1 className="text-lg font-semibold text-slate-800">Uygulama Adı</h1>
         <div className="flex items-center gap-2">
           <button 
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -193,7 +191,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
             <div className="relative w-20 h-20 rounded-full overflow-hidden border-4 border-emerald-300 shadow-xl">
               <Image 
                 src={userProfile.photoURL} 
-                alt={userProfile.displayName || t('profile')} 
+                alt={userProfile.displayName || 'Profil'} 
                 className="object-cover"
                 fill
               />
@@ -204,37 +202,37 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
             </div>
           )}
           <div className="flex flex-col items-center">
-            <span className="text-xl font-bold text-slate-800 truncate max-w-[180px]">{userProfile?.displayName || userProfile?.firstName || t('student')}</span>
-            <span className="text-xs text-slate-500">{userProfile?.role || t('student')}</span>
+            <span className="text-xl font-bold text-slate-800 truncate max-w-[180px]">{userProfile?.displayName || userProfile?.firstName || 'Öğrenci'}</span>
+            <span className="text-xs text-slate-500">{userProfile?.role || 'Öğrenci'}</span>
           </div>
         </div>
         {/* Menü öğeleri */}
         <div className="flex-1 overflow-y-auto flex flex-col justify-between mt-6">
           <nav className="space-y-3 px-5">
-            {filteredMenuItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  router.push(item.url);
-                  setSidebarOpen(false);
-                }}
-                className={`
-                  group w-full flex items-center gap-4 px-6 py-3 rounded-2xl text-[17px] font-semibold transition-all duration-200
-                  relative
-                  ${activeTab === item.id 
-                    ? 'bg-white/90 shadow-lg text-emerald-700 border-l-8 border-emerald-500 animate-pulse' 
-                    : 'text-slate-600 hover:bg-emerald-50/80 hover:text-emerald-700'
-                  }
-                  focus:outline-none focus:ring-2 focus:ring-emerald-200
-                `}
-              >
-                <span className={`text-2xl ${activeTab === item.id ? 'text-emerald-600' : 'text-slate-400 group-hover:text-emerald-500'}`}>{item.icon}</span>
-                <span className="truncate">{item.label}</span>
-                {activeTab === item.id && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-10 bg-emerald-500 rounded-r-xl shadow-md"></span>
-                )}
-              </button>
-            ))}
+            {filteredMenuItems.map((item) => {
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    router.push(item.url);
+                    setSidebarOpen(false);
+                  }}
+                  className={`
+                    group w-full flex items-center gap-4 px-6 py-3 rounded-2xl text-[17px] font-semibold transition-all duration-200
+                    relative
+                    ${isActive ? 'bg-white/90 shadow-lg text-emerald-700 border-l-8 border-emerald-500 animate-pulse' : 'text-slate-600 hover:bg-emerald-50/80 hover:text-emerald-700'}
+                    focus:outline-none focus:ring-2 focus:ring-emerald-200
+                  `}
+                >
+                  <span className={`text-2xl ${isActive ? 'text-emerald-600' : 'text-slate-400 group-hover:text-emerald-500'}`}>{item.icon}</span>
+                  <span className="truncate">{item.label}</span>
+                  {isActive && (
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-10 bg-emerald-500 rounded-r-xl shadow-md"></span>
+                  )}
+                </button>
+              );
+            })}
           </nav>
           {/* Çıkış butonunu en alta sabitle */}
           <div className="mt-10 px-5 pb-8">

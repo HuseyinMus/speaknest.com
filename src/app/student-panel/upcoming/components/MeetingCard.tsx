@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Clock, Users, MapPin, Star } from 'lucide-react';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { useLanguage } from '@/lib/context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 
 interface MeetingCardProps {
   meeting: Meeting;
@@ -14,7 +14,7 @@ interface MeetingCardProps {
 }
 
 export function MeetingCard({ meeting, onJoin, onFavorite, isFavorite = false }: MeetingCardProps) {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
 
   return (
     <Card className="hover:shadow-lg transition-shadow">

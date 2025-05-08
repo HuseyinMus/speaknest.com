@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { auth, db } from '@/lib/firebase/config';
 import { useRouter } from 'next/navigation';
 import { collection, query, where, getDocs, orderBy, doc, updateDoc, arrayUnion, arrayRemove, addDoc, deleteDoc } from 'firebase/firestore';
-import { useLanguage } from '@/lib/context/LanguageContext';
 import { useToast } from '@/lib/context/ToastContext';
 import { Shimmer, ShimmerCard, ShimmerList } from '@/components/ui/Shimmer';
 import { Calendar, Users, MessageCircle, Clock, CheckSquare, X } from 'lucide-react';
@@ -34,7 +33,6 @@ interface Meeting {
 }
 
 export default function SessionsPage() {
-  const { t } = useLanguage();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
@@ -133,7 +131,7 @@ export default function SessionsPage() {
       setLoading(false);
     } catch (err) {
       console.error('Toplantı verileri alınamadı:', err);
-      setError(t('sessionCheckError', { default: 'Oturum kontrolü sırasında bir hata oluştu.' }));
+      setError('Oturum kontrolü sırasında bir hata oluştu.');
       setLoading(false);
     }
   }, []);
@@ -152,17 +150,17 @@ export default function SessionsPage() {
         return () => unsubscribe();
       } catch (err) {
         console.error('Auth kontrolü sırasında hata:', err);
-        setError(t('sessionCheckError', { default: 'Oturum kontrolü sırasında bir hata oluştu.' }));
+        setError('Oturum kontrolü sırasında bir hata oluştu.');
         setLoading(false);
       }
     };
     
     checkAuth();
-  }, [router, fetchMeetings, t]);
+  }, [router, fetchMeetings]);
 
   // Toplantı seviyesi için çevirileri manuel olarak yapan yardımcı fonksiyon
   const getLevelTranslation = (level: string) => {
-    return t(`level_${level}`, { default: getLevelFallback(level) });
+    return getLevelFallback(level);
   };
 
   // Level için fallback değerlerini döndüren yardımcı fonksiyon
@@ -178,7 +176,7 @@ export default function SessionsPage() {
 
   // Toplantı konusu için çevirileri manuel olarak yapan yardımcı fonksiyon
   const getTopicTranslation = (topic: string) => {
-    return t(`topic_${topic}`, { default: getTopicFallback(topic) });
+    return getTopicFallback(topic);
   };
 
   // Topic için fallback değerlerini döndüren yardımcı fonksiyon
@@ -304,12 +302,12 @@ export default function SessionsPage() {
         status: 'registered'
       });
 
-      toast.success(t('registrationSuccess', { default: 'Toplantıya başarıyla kayıt oldunuz.' }));
+      toast.success('Toplantıya başarıyla kayıt oldunuz.');
       setIsRegistered(true);
       fetchMeetings(); // Toplantı listesini güncelle
     } catch (error) {
       console.error('Kayıt işlemi hatası:', error);
-      toast.error(t('registrationError', { default: 'Kayıt işlemi sırasında bir hata oluştu.' }));
+      toast.error('Kayıt işlemi sırasında bir hata oluştu.');
     }
   };
 
@@ -318,7 +316,7 @@ export default function SessionsPage() {
     try {
       const user = auth.currentUser;
       if (!user) {
-        toast.error(t('sessionCheckError'));
+        toast.error('Oturum kontrolü sırasında bir hata oluştu.');
         return;
       }
 
@@ -329,7 +327,7 @@ export default function SessionsPage() {
       const minutesDiff = timeDiff / (1000 * 60);
 
       if (minutesDiff < 30) {
-        toast.error(t('cancellationClosed', { default: 'Toplantıdan ayrılmak için çok geç. Toplantı başlamasına 30 dakikadan az kaldı.' }));
+        toast.error('Toplantıdan ayrılmak için çok geç. Toplantı başlamasına 30 dakikadan az kaldı.');
         return;
       }
 
@@ -365,12 +363,12 @@ export default function SessionsPage() {
         registeredMeetings: arrayRemove(meeting.id)
       });
 
-      toast.success(t('cancellationSuccess', { default: 'Toplantıdan ayrıldınız.' }));
+      toast.success('Toplantıdan ayrıldınız.');
       setIsRegistered(false);
       fetchMeetings(); // Toplantı listesini güncelle
     } catch (error) {
       console.error('İptal hatası:', error);
-      toast.error(t('cancellationError', { default: 'İptal işlemi sırasında bir hata oluştu.' }));
+      toast.error('İptal işlemi sırasında bir hata oluştu.');
     }
   };
 
@@ -396,7 +394,7 @@ export default function SessionsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="bg-white border border-slate-200 text-slate-700 px-6 py-5 rounded-lg max-w-md shadow-sm">
-          <h2 className="text-lg font-semibold mb-3 text-red-600">{t('error')}</h2>
+          <h2 className="text-lg font-semibold mb-3 text-red-600">Hata</h2>
           <p className="text-slate-600">{error}</p>
           <button 
             onClick={() => router.push('/login')}
@@ -413,8 +411,8 @@ export default function SessionsPage() {
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-          <h1 className="text-3xl font-bold text-slate-800 mb-2">{t('availableSessions')}</h1>
-          <p className="text-slate-600">{t('myMeetingsDescription', { default: 'Katılabileceğiniz toplantılar burada listelenir.' })}</p>
+          <h1 className="text-3xl font-bold text-slate-800 mb-2">Kullanılabilir Toplantılar</h1>
+          <p className="text-slate-600">Katılabileceğiniz toplantılar burada listelenir.</p>
         </div>
 
         {/* Filtreleme Bölümü */}
@@ -424,7 +422,7 @@ export default function SessionsPage() {
             <div className="relative">
               <input
                 type="text"
-                placeholder={t('search')}
+                placeholder="Arama"
                 className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -437,10 +435,10 @@ export default function SessionsPage() {
               value={selectedLevel}
               onChange={(e) => setSelectedLevel(e.target.value)}
             >
-              <option value="all">{t('allLevels')}</option>
-              <option value="beginner">{t('level_beginner')}</option>
-              <option value="intermediate">{t('level_intermediate')}</option>
-              <option value="advanced">{t('level_advanced')}</option>
+              <option value="all">Tüm Seviyeler</option>
+              <option value="beginner">Başlangıç Seviyesi</option>
+              <option value="intermediate">Orta Seviye</option>
+              <option value="advanced">İleri Seviye</option>
             </select>
 
             {/* Konu Filtresi */}
@@ -449,19 +447,19 @@ export default function SessionsPage() {
               value={selectedTopic}
               onChange={(e) => setSelectedTopic(e.target.value)}
             >
-              <option value="all">{t('allTopics')}</option>
-              <option value="daily">{t('topic_daily')}</option>
-              <option value="business">{t('topic_business')}</option>
-              <option value="education">{t('topic_education')}</option>
-              <option value="science">{t('topic_science')}</option>
-              <option value="technology">{t('topic_technology')}</option>
-              <option value="arts">{t('topic_arts')}</option>
-              <option value="travel">{t('topic_travel')}</option>
-              <option value="food">{t('topic_food')}</option>
-              <option value="sports">{t('topic_sports')}</option>
-              <option value="health">{t('topic_health')}</option>
-              <option value="environment">{t('topic_environment')}</option>
-              <option value="entertainment">{t('topic_entertainment')}</option>
+              <option value="all">Tüm Konular</option>
+              <option value="daily">Günlük Konuşma</option>
+              <option value="business">İş Dünyası</option>
+              <option value="education">Eğitim/Okul</option>
+              <option value="science">Bilim</option>
+              <option value="technology">Teknoloji</option>
+              <option value="arts">Sanat ve Kültür</option>
+              <option value="travel">Seyahat</option>
+              <option value="food">Yemek ve Mutfak</option>
+              <option value="sports">Spor</option>
+              <option value="health">Sağlık ve Wellness</option>
+              <option value="environment">Çevre</option>
+              <option value="entertainment">Eğlence ve Hobiler</option>
             </select>
           </div>
         </div>
@@ -500,7 +498,7 @@ export default function SessionsPage() {
                       />
                       <div>
                         <p className="text-sm font-medium text-slate-800">{meeting.hostName}</p>
-                        <p className="text-xs text-slate-500">{t('host')}</p>
+                        <p className="text-xs text-slate-500">Host</p>
                       </div>
                     </div>
                   </CardHeader>
@@ -524,12 +522,12 @@ export default function SessionsPage() {
                       </div>
                       <div className="flex items-center text-sm text-slate-600">
                         <Users className="mr-2 h-4 w-4 text-slate-400" />
-                        <span>{meeting.participants.length}/{meeting.maxParticipants} {t('participants')}</span>
+                        <span>{meeting.participants.length}/{meeting.maxParticipants} Katılımcı</span>
                       </div>
                       {!canRegister && (
                         <div className="mt-2 p-2 bg-yellow-50 rounded-md text-yellow-700 text-xs">
                           <Clock className="inline-block mr-1 h-3 w-3" />
-                          {t('registrationClosed', { default: 'Toplantı başlamasına 30 dakikadan az kaldığı için kayıt yapılamaz.' })}
+                          Toplantı başlamasına 30 dakikadan az kaldığı için kayıt yapılamaz.
                         </div>
                       )}
                     </div>
@@ -542,7 +540,7 @@ export default function SessionsPage() {
                         disabled={!canRegister}
                       >
                         <X className="h-5 w-5" />
-                        <span className="text-base">{t('cancelRegistration')}</span>
+                        <span className="text-base">Kayıt İptal Et</span>
                       </Button>
                     ) : (
                       <Button
@@ -560,17 +558,17 @@ export default function SessionsPage() {
                         {meeting.participants.length >= meeting.maxParticipants ? (
                           <>
                             <Users className="h-5 w-5" />
-                            <span className="text-base">{t('meetingFull')}</span>
+                            <span className="text-base">Toplantı Dolu</span>
                           </>
                         ) : !canRegister ? (
                           <>
                             <Clock className="h-5 w-5" />
-                            <span className="text-base">{t('registrationClosed')}</span>
+                            <span className="text-base">Kayıt Kapalı</span>
                           </>
                         ) : (
                           <>
                             <CheckSquare className="h-5 w-5" />
-                            <span className="text-base">{t('register')}</span>
+                            <span className="text-base">Kayıt Ol</span>
                           </>
                         )}
                       </Button>
@@ -585,8 +583,8 @@ export default function SessionsPage() {
             <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Calendar className="w-8 h-8 text-slate-400" />
             </div>
-            <h2 className="text-xl font-semibold text-slate-800 mb-2">{t('noMeetingsAvailable')}</h2>
-            <p className="text-slate-600">{t('noMeetingsAvailableDescription', { default: 'Daha sonra tekrar kontrol edin.' })}</p>
+            <h2 className="text-xl font-semibold text-slate-800 mb-2">Kullanılabilir Toplantı Yok</h2>
+            <p className="text-slate-600">Daha sonra tekrar kontrol edin.</p>
           </div>
         )}
       </div>
@@ -595,16 +593,16 @@ export default function SessionsPage() {
       {showRegistrationModal && selectedMeeting && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl shadow-lg p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold text-slate-800 mb-4">{t('confirmRegistration')}</h3>
+            <h3 className="text-xl font-bold text-slate-800 mb-4">Kayıt Onayı</h3>
             <p className="text-slate-600 mb-6">
-              {t('registrationConfirmation')}
+              Toplantıya kayıt olmak istediğinize emin misiniz?
             </p>
             <div className="flex gap-4">
               <button
                 onClick={() => setShowRegistrationModal(false)}
                 className="flex-1 py-2.5 px-4 rounded-lg bg-slate-100 text-slate-700 font-medium hover:bg-slate-200 transition-all duration-300 cursor-pointer"
               >
-                {t('cancel')}
+                İptal
               </button>
               <button
                 onClick={() => {
@@ -615,7 +613,7 @@ export default function SessionsPage() {
                 }}
                 className="flex-1 py-2.5 px-4 rounded-lg bg-emerald-500 text-white font-medium hover:bg-emerald-600 transition-all duration-300 hover:shadow-md cursor-pointer"
               >
-                {t('confirm')}
+                Onayla
               </button>
             </div>
           </div>

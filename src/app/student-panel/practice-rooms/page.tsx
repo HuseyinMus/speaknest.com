@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useLanguage } from '@/lib/context/LanguageContext';
 import { useAuth } from '@/lib/context/AuthContext';
 import { db } from '@/lib/firebase/config';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
@@ -29,7 +28,6 @@ interface UserMeeting {
 }
 
 export default function PracticeRoomsPage() {
-  const { t } = useLanguage();
   const { user } = useAuth();
   const [meetings, setMeetings] = useState<UserMeeting[]>([]);
   const [loading, setLoading] = useState(true);
@@ -201,8 +199,8 @@ export default function PracticeRoomsPage() {
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-          <h1 className="text-3xl font-bold text-slate-800 mb-2">{t('practiceRooms')}</h1>
-          <p className="text-slate-600">{t('practiceRoomsDescription', { default: 'Kayıtlı olduğunuz toplantılar burada listelenir.' })}</p>
+          <h1 className="text-3xl font-bold text-slate-800 mb-2">Toplantılar</h1>
+          <p className="text-slate-600">Toplantılar sayfasında, mevcut toplantılarınızı görüntüleyebilirsiniz.</p>
         </div>
 
         {meetings.filter(meeting => {
@@ -215,8 +213,8 @@ export default function PracticeRoomsPage() {
             <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Calendar className="w-8 h-8 text-slate-400" />
             </div>
-            <h2 className="text-xl font-semibold text-slate-800 mb-2">{t('noMeetingsYet')}</h2>
-            <p className="text-slate-600">{t('myMeetingsDescription')}</p>
+            <h2 className="text-xl font-semibold text-slate-800 mb-2">Henüz Toplantı Yok</h2>
+            <p className="text-slate-600">Henüz kayıtlı toplantınız bulunmamaktadır.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -239,7 +237,7 @@ export default function PracticeRoomsPage() {
                         <CardDescription className="text-slate-600">{meeting.meetingDescription}</CardDescription>
                       </div>
                       <span className={`px-3 py-1 rounded-full text-xs font-medium ${colors.badge}`}>
-                        {t(`level_${meeting.level}`)}
+                        {meeting.level}
                       </span>
                     </div>
                     <div className="flex items-center space-x-3 pt-4 border-t border-slate-100">
@@ -250,7 +248,7 @@ export default function PracticeRoomsPage() {
                       />
                       <div>
                         <p className="text-sm font-medium text-slate-800">{meeting.hostName}</p>
-                        <p className="text-xs text-slate-500">{t('host')}</p>
+                        <p className="text-xs text-slate-500">Host</p>
                       </div>
                     </div>
                   </CardHeader>
@@ -270,12 +268,12 @@ export default function PracticeRoomsPage() {
                     <div className="space-y-4">
                       <div className="flex items-center text-sm text-slate-600">
                         <MessageCircle className="mr-2 h-4 w-4 text-slate-400" />
-                        <span>{t(`topic_${meeting.topic}`)}</span>
+                        <span>{meeting.topic}</span>
                       </div>
                       {!isMeetingActive(meeting) && (
                         <div className="mt-2 p-2 bg-yellow-50 rounded-md text-yellow-700 text-xs">
                           <Clock className="inline-block mr-1 h-3 w-3" />
-                          {t('meetingNotStarted')}
+                          Toplantı henüz başlamadı
                         </div>
                       )}
                     </div>
@@ -291,7 +289,7 @@ export default function PracticeRoomsPage() {
                       disabled={!isMeetingActive(meeting) || !meeting.meetUrl}
                     >
                       <Video className="mr-2 h-4 w-4" />
-                      {isMeetingActive(meeting) ? t('joinMeeting') : t('meetingNotStarted')}
+                      {isMeetingActive(meeting) ? 'Toplantıya Katıl' : 'Toplantı henüz başlamadı'}
                     </Button>
                   </CardFooter>
                 </Card>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useLanguage } from '@/lib/context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/lib/context/AuthContext';
 import { db, collections } from '@/lib/firebase/config';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
@@ -26,7 +26,7 @@ interface Meeting {
 }
 
 export default function MyMeetingsPage() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(true);
