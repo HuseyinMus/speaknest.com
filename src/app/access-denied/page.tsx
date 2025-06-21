@@ -4,10 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase/config';
 import { AlertTriangle, Home, LogOut } from 'lucide-react';
-import { useLanguage } from '@/lib/context/LanguageContext';
 
 export default function AccessDeniedPage() {
-  const { t } = useLanguage();
   const router = useRouter();
   const [userEmail, setUserEmail] = useState<string | null>(null);
   
