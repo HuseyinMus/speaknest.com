@@ -6,7 +6,6 @@ import { useAuth } from '@/lib/context/AuthContext';
 import { doc, getDoc, collection, getDocs, setDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { BookOpen, ArrowLeft, CheckCircle, XCircle, Clock, ThumbsUp, ThumbsDown, RefreshCw, HelpCircle, Smile, Meh, Volume2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 
 interface Word {
   id: string;
@@ -49,7 +48,6 @@ export default function WordGroupPage({ params }: { params: { id: string } }) {
   const id = resolvedParams.id;
   console.log('id:', id);
 
-  const { t } = useTranslation();
   const router = useRouter();
   const { user } = useAuth();
   

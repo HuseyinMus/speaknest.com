@@ -17,6 +17,8 @@ export default function LoginPage() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
   const [authChecked, setAuthChecked] = useState(false);
+  const [showDestinationSelector, setShowDestinationSelector] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   
   const router = useRouter();
   
@@ -24,8 +26,44 @@ export default function LoginPage() {
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
-        // Kullanıcının rolünü kontrol et ve uygun sayfaya yönlendir
-        await redirectBasedOnRole(user);
+        setCurrentUser(user);
+        // Kullanıcının rolünü kontrol et
+        try {
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            
+            // Auth cookie'sini ayarla
+            await setAuthCookie({
+              uid: user.uid,
+              role: userData.role || 'student',
+            });
+            
+            // Eğer admin, teacher veya proUser ise direkt yönlendir
+            if (userData.role === 'admin') {
+              router.push('/dashboard');
+            } else if (userData.role === 'teacher') {
+              router.push('/teacher-panel');
+            } else if (userData.role === 'proUser') {
+              router.push('/prouser-panel');
+            } else {
+              // Öğrenci ise seçim sayfasını göster
+              setShowDestinationSelector(true);
+            }
+          } else {
+            // Kullanıcı verisi yoksa seçim sayfasını göster
+            await setAuthCookie({
+              uid: user.uid,
+              role: 'student',
+            });
+            setShowDestinationSelector(true);
+          }
+        } catch (error) {
+          console.error('Rol kontrolü sırasında hata:', error);
+          setError('Oturum açma sırasında bir hata oluştu. Lütfen tekrar deneyin.');
+          setLoading(false);
+        }
       } else {
         // Auth kontrolü tamamlandı
         setAuthChecked(true);
@@ -35,46 +73,6 @@ export default function LoginPage() {
     return () => unsubscribe();
   }, [router]);
   
-  // Kullanıcı rolüne göre yönlendirme
-  const redirectBasedOnRole = async (user) => {
-    try {
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
-      
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        
-        // Auth cookie'sini ayarla
-        await setAuthCookie({
-          uid: user.uid,
-          role: userData.role || 'student',
-        });
-        
-        if (userData.role === 'admin') {
-          router.push('/dashboard');
-        } else if (userData.role === 'teacher') {
-          router.push('/teacher-panel');
-        } else if (userData.role === 'proUser') {
-          router.push('/prouser-panel');
-        } else {
-          // Varsayılan olarak öğrenci paneline yönlendir
-          router.push('/student-panel');
-        }
-      } else {
-        // Kullanıcı verisi yoksa öğrenci olarak kabul et
-        await setAuthCookie({
-          uid: user.uid,
-          role: 'student',
-        });
-        
-        router.push('/student-panel');
-      }
-    } catch (error) {
-      console.error('Rol kontrolü sırasında hata:', error);
-      setError('Oturum açma sırasında bir hata oluştu. Lütfen tekrar deneyin.');
-      setLoading(false);
-    }
-  };
-  
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -83,9 +81,39 @@ export default function LoginPage() {
     try {
       // Email/şifre ile giriş yap
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      setCurrentUser(userCredential.user);
       
-      // Kullanıcının rolüne göre yönlendir
-      await redirectBasedOnRole(userCredential.user);
+      // Kullanıcının rolünü kontrol et
+      const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        
+        // Auth cookie'sini ayarla
+        await setAuthCookie({
+          uid: userCredential.user.uid,
+          role: userData.role || 'student',
+        });
+        
+        // Eğer admin, teacher veya proUser ise direkt yönlendir
+        if (userData.role === 'admin') {
+          router.push('/dashboard');
+        } else if (userData.role === 'teacher') {
+          router.push('/teacher-panel');
+        } else if (userData.role === 'proUser') {
+          router.push('/prouser-panel');
+        } else {
+          // Öğrenci ise seçim sayfasını göster
+          setShowDestinationSelector(true);
+        }
+      } else {
+        // Kullanıcı verisi yoksa seçim sayfasını göster
+        await setAuthCookie({
+          uid: userCredential.user.uid,
+          role: 'student',
+        });
+        setShowDestinationSelector(true);
+      }
     } catch (err: any) {
       setError('Giriş yapılamadı: ' + (err.message || 'Bilinmeyen hata'));
     } finally {
@@ -100,13 +128,59 @@ export default function LoginPage() {
     try {
       // Google ile giriş yap
       const user = await signInWithGoogle();
+      setCurrentUser(user);
       
-      // Kullanıcının rolüne göre yönlendir
-      await redirectBasedOnRole(user);
+      // Kullanıcının rolünü kontrol et
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        
+        // Auth cookie'sini ayarla
+        await setAuthCookie({
+          uid: user.uid,
+          role: userData.role || 'student',
+        });
+        
+        // Eğer admin, teacher veya proUser ise direkt yönlendir
+        if (userData.role === 'admin') {
+          router.push('/dashboard');
+        } else if (userData.role === 'teacher') {
+          router.push('/teacher-panel');
+        } else if (userData.role === 'proUser') {
+          router.push('/prouser-panel');
+        } else {
+          // Öğrenci ise seçim sayfasını göster
+          setShowDestinationSelector(true);
+        }
+      } else {
+        // Kullanıcı verisi yoksa seçim sayfasını göster
+        await setAuthCookie({
+          uid: user.uid,
+          role: 'student',
+        });
+        setShowDestinationSelector(true);
+      }
     } catch (err: any) {
       setError('Google ile giriş yapılamadı: ' + (err.message || 'Bilinmeyen hata'));
     } finally {
       setGoogleLoading(false);
+    }
+  };
+
+  const handleDestinationSelect = (destination: string) => {
+    switch (destination) {
+      case 'student':
+        router.push('/student-panel');
+        break;
+      case 'apply':
+        router.push('/apply');
+        break;
+      case 'home':
+        router.push('/');
+        break;
+      default:
+        router.push('/student-panel');
     }
   };
   
@@ -115,6 +189,62 @@ export default function LoginPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-xl">Yükleniyor...</div>
+      </div>
+    );
+  }
+
+  // Giriş yapmış kullanıcı için seçim sayfası
+  if (showDestinationSelector && currentUser) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-sky-400 to-green-300 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="bg-white/90 backdrop-blur-md py-8 px-4 shadow-xl rounded-2xl sm:px-10">
+            <div className="text-center mb-6">
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                Hoş Geldiniz! 👋
+              </h1>
+              <p className="text-gray-600">
+                {currentUser.email}
+              </p>
+            </div>
+            
+            <div className="space-y-4">
+              <button
+                onClick={() => handleDestinationSelect('student')}
+                className="w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              >
+                📚 Öğrenci Paneli
+              </button>
+              
+              <button
+                onClick={() => handleDestinationSelect('apply')}
+                className="w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+              >
+                🎯 ProUser Başvurusu Yap
+              </button>
+              
+              <button
+                onClick={() => handleDestinationSelect('home')}
+                className="w-full flex items-center justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              >
+                🏠 Ana Sayfaya Git
+              </button>
+            </div>
+            
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => {
+                  auth.signOut();
+                  setShowDestinationSelector(false);
+                  setCurrentUser(null);
+                }}
+                className="text-sm text-gray-500 hover:text-gray-700"
+              >
+                Farklı hesap ile giriş yap
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

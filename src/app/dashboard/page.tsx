@@ -1,14 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { auth, db } from '@/lib/firebase/config';
 import { userService, User } from '@/lib/services/UserService';
 import { rbacService } from '@/lib/auth/rbac';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
-import { Home, Users, Book, Settings, LogOut, BookOpen, PlusCircle, Image, GraduationCap, Volume2 } from 'lucide-react';
-import { collection, addDoc, getDocs, deleteDoc, doc, Timestamp, query, orderBy, updateDoc, setDoc, where } from 'firebase/firestore';
+import { Home, Users, Book, Settings, LogOut, BookOpen, PlusCircle, Image, GraduationCap, Volume2, FileText, Star, MessageSquare } from 'lucide-react';
+import { collection, addDoc, getDocs, deleteDoc, doc, Timestamp, query, orderBy, updateDoc, setDoc, where, serverTimestamp } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import styles from './styles.module.css';
 
@@ -724,143 +724,89 @@ export default function Dashboard() {
     switch(activeSection) {
       case 'dashboard':
         return (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h2 className="text-xl font-semibold mb-2 text-gray-800">Toplam Kullanıcı</h2>
-                <p className="text-3xl font-bold text-blue-600">{users.length}</p>
-              </div>
-              
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h2 className="text-xl font-semibold mb-2 text-gray-800">Öğretmen</h2>
-                <p className="text-3xl font-bold text-green-600">
-                  {users.filter(user => user.role === 'teacher').length}
-                </p>
-              </div>
-              
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h2 className="text-xl font-semibold mb-2 text-gray-800">Editör</h2>
-                <p className="text-3xl font-bold text-yellow-600">
-                  {users.filter(user => user.role === 'editor').length}
-                </p>
-              </div>
-              
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h2 className="text-xl font-semibold mb-2 text-gray-800">Öğrenci</h2>
-                <p className="text-3xl font-bold text-purple-600">
-                  {users.filter(user => user.role === 'student').length}
-                </p>
-              </div>
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-800">Yönetim Paneli</h2>
             </div>
-            
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-800">Son Aktiviteler</h2>
-              </div>
-              <div className="p-6">
-                <p className="text-gray-600">Son aktiviteler burada görüntülenecek...</p>
-              </div>
+            <div className="p-6">
+              <p className="text-gray-600">Yönetim paneline hoş geldiniz. Soldaki menüden işlem seçebilirsiniz.</p>
             </div>
-          </>
+          </div>
         );
       case 'users':
         return (
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-800">Kullanıcı Listesi</h2>
+              <h2 className="text-lg font-semibold text-gray-800">Kullanıcı Yönetimi</h2>
             </div>
-            
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      ID
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Kullanıcı Adı
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      E-posta
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Rol
-                    </th>
-                    {isAdmin && (
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        İşlemler
-                      </th>
-                    )}
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {users.length > 0 ? (
-                    users.map((user) => (
-                      <tr key={user.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {user.id.slice(0, 8)}...
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {user.displayName}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {user.email}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${
-                            user.role === 'admin' 
-                              ? 'bg-red-100 text-red-800' 
-                              : user.role === 'teacher'
-                              ? 'bg-green-100 text-green-800'
-                              : user.role === 'editor'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : user.role === 'proUser'
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-purple-100 text-purple-800'
-                          }`}>
-                            {rbacService.getRoleDisplayName(user.role)}
-                          </span>
-                        </td>
-                        {isAdmin && (
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {changingRole === user.id ? (
-                              <span className="text-gray-500">İşleniyor...</span>
-                            ) : (
-                              <div className="flex items-center space-x-2">
-                                {user.role !== 'admin' && (
-                                  <select 
-                                    className="text-sm border border-gray-300 rounded px-2 py-1 bg-white"
-                                    onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                                    defaultValue=""
-                                  >
-                                    <option value="" disabled>Rol Seç</option>
-                                    <option value="teacher">Öğretmen</option>
-                                    <option value="editor">Editör</option>
-                                    <option value="proUser">Pro Kullanıcı</option>
-                                    <option value="student">Öğrenci</option>
-                                  </select>
-                                )}
-                                {user.role === 'admin' && (
-                                  <span className="text-gray-500">Admin rolü değiştirilemez</span>
-                                )}
-                              </div>
+            {loading ? (
+              <div className="p-6 text-center">Yükleniyor...</div>
+            ) : error ? (
+              <div className="p-6 text-red-500">{error}</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kullanıcı ID</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {users.length > 0 ? (
+                      users.map((user) => (
+                        <tr key={user.id}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.id.slice(0, 8)}...</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            {isAdmin && (
+                              <select 
+                                value={user.role}
+                                onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                                disabled={changingRole === user.id || user.role === 'admin'}
+                                className="text-sm rounded border-gray-300"
+                              >
+                                {rbacService.getAllRoles().map(role => (
+                                  <option key={role} value={role}>{rbacService.getRoleDisplayName(role)}</option>
+                                ))}
+                              </select>
                             )}
                           </td>
-                        )}
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            {isAdmin && (
+                              <select 
+                                value={user.role}
+                                onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                                disabled={changingRole === user.id || user.role === 'admin'}
+                                className="text-sm rounded border-gray-300"
+                              >
+                                {rbacService.getAllRoles().map(role => (
+                                  <option key={role} value={role}>{rbacService.getRoleDisplayName(role)}</option>
+                                ))}
+                              </select>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">Kullanıcı bulunamadı.</td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={isAdmin ? 5 : 4} className="px-6 py-4 text-center text-sm text-gray-500">
-                        Kullanıcı bulunamadı
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         );
+      case 'applications':
+        return <ApplicationsList />;
+      case 'testimonials':
+        return <TestimonialsList />;
+      case 'notifications':
+        return <NotificationsManager />;
       case 'vocabulary':
         return (
           <div className="space-y-6">
@@ -1720,68 +1666,104 @@ export default function Dashboard() {
   };
   
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <div className={`bg-white shadow-lg fixed inset-y-0 left-0 z-30 transform transition duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static lg:inset-0`}>
-        <div className="flex flex-col h-full w-64">
-          <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
-            <Link href="/" className="flex items-center">
-              <span className="text-xl font-semibold text-blue-600">SpeakNest</span>
-              <span className="ml-2 text-sm bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Admin</span>
-            </Link>
-            <button 
-              className="p-1 rounded-md text-gray-400 hover:text-gray-500 lg:hidden"
-              onClick={() => setSidebarOpen(false)}
-            >
-              <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-          
-          <div className="overflow-y-auto flex-grow">
-            <nav className="px-2 py-4 space-y-1">
-              {menuItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveSection(item.id)}
-                  className={`w-full flex items-center px-4 py-2.5 text-sm font-medium rounded-md transition ${
-                    activeSection === item.id
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  <span className={`mr-3 ${activeSection === item.id ? 'text-blue-600' : 'text-gray-500'}`}>
-                    {item.icon}
-                  </span>
-                  {item.label}
-                </button>
-              ))}
-            </nav>
-          </div>
-          
-          <div className="p-4 border-t border-gray-200">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center text-white text-lg">
-                {currentUser?.displayName?.charAt(0) || currentUser?.email?.charAt(0) || 'A'}
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-700 truncate max-w-[160px]">
-                  {currentUser?.displayName || currentUser?.email || 'Admin Kullanıcı'}
-                </p>
-                <p className="text-xs text-gray-500">Admin</p>
-              </div>
+    <div className={`flex h-screen bg-gray-100 ${styles.dashboardContainer}`}>
+      <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''} bg-gray-800 text-white flex flex-col transition-all duration-300`}>
+        <div className="p-4 border-b border-gray-700 flex justify-between items-center">
+          <div className="flex items-center">
+            <div className="flex-shrink-0 w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center text-white text-lg">
+              {currentUser?.displayName?.charAt(0) || currentUser?.email?.charAt(0) || 'A'}
             </div>
-            <button
-              className="mt-3 w-full flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-red-500 rounded hover:bg-red-600 transition"
-              onClick={handleLogout}
-            >
-              <LogOut size={16} className="mr-2" />
-              Çıkış Yap
-            </button>
+            <div className="ml-3">
+              <p className="text-sm font-medium text-gray-700 truncate max-w-[160px]">
+                {currentUser?.displayName || currentUser?.email || 'Admin Kullanıcı'}
+              </p>
+              <p className="text-xs text-gray-500">Admin</p>
+            </div>
           </div>
+          <button
+            className="p-1 rounded-md text-gray-400 hover:text-gray-500 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
-      </div>
+        
+        <div className="overflow-y-auto flex-grow">
+          <nav className="px-2 py-4 space-y-1">
+            <a href="#" onClick={() => setActiveSection('dashboard')} className={`flex items-center px-4 py-2 rounded-md text-sm font-medium ${activeSection === 'dashboard' ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>
+              <Home className="mr-3" size={18} />
+              Anasayfa
+            </a>
+            {isAdmin && (
+              <a href="#" onClick={() => setActiveSection('users')} className={`flex items-center px-4 py-2 rounded-md text-sm font-medium ${activeSection === 'users' ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>
+                <Users className="mr-3" size={18} />
+                Kullanıcılar
+              </a>
+            )}
+            {isAdmin && (
+              <a href="#" onClick={() => setActiveSection('applications')} className={`flex items-center px-4 py-2 rounded-md text-sm font-medium ${activeSection === 'applications' ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>
+                <FileText className="mr-3" size={18} />
+                Başvurular
+              </a>
+            )}
+            {isAdmin && (
+              <a href="#" onClick={() => setActiveSection('testimonials')} className={`flex items-center px-4 py-2 rounded-md text-sm font-medium ${activeSection === 'testimonials' ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>
+                <Star className="mr-3" size={18} />
+                Yorumlar
+              </a>
+            )}
+            {isAdmin && (
+              <a href="#" onClick={() => setActiveSection('notifications')} className={`flex items-center px-4 py-2 rounded-md text-sm font-medium ${activeSection === 'notifications' ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>
+                <MessageSquare className="mr-3" size={18} />
+                Bildirimler
+              </a>
+            )}
+            <a href="#" onClick={() => setActiveSection('wordGroups')} className={`flex items-center px-4 py-2 rounded-md text-sm font-medium ${activeSection === 'wordGroups' ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>
+              <Book className="mr-3" size={18} />
+              Kelime Grupları
+            </a>
+            <a href="#" onClick={() => setActiveSection('addWord')} className={`flex items-center px-4 py-2 rounded-md text-sm font-medium ${activeSection === 'addWord' ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>
+              <PlusCircle className="mr-3" size={18} />
+              Kelime Ekle
+            </a>
+            <a href="#" onClick={() => setActiveSection('learnWords')} className={`flex items-center px-4 py-2 rounded-md text-sm font-medium ${activeSection === 'learnWords' ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>
+              <GraduationCap className="mr-3" size={18} />
+              Kelime Öğren
+            </a>
+            <a href="#" onClick={() => setActiveSection('content')} className={`flex items-center px-4 py-2 rounded-md text-sm font-medium ${activeSection === 'content' ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>
+              <Book className="mr-3" size={18} />
+              İçerik Yönetimi
+            </a>
+            <a href="#" onClick={() => setActiveSection('settings')} className={`flex items-center px-4 py-2 rounded-md text-sm font-medium ${activeSection === 'settings' ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>
+              <Settings className="mr-3" size={18} />
+              Ayarlar
+            </a>
+          </nav>
+        </div>
+        
+        <div className="p-4 border-t border-gray-200">
+          <div className="flex items-center">
+            <div className="flex-shrink-0 w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center text-white text-lg">
+              {currentUser?.displayName?.charAt(0) || currentUser?.email?.charAt(0) || 'A'}
+            </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium text-gray-700 truncate max-w-[160px]">
+                {currentUser?.displayName || currentUser?.email || 'Admin Kullanıcı'}
+              </p>
+              <p className="text-xs text-gray-500">Admin</p>
+            </div>
+          </div>
+          <button
+            className="mt-3 w-full flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-red-500 rounded hover:bg-red-600 transition"
+            onClick={handleLogout}
+          >
+            <LogOut size={16} className="mr-2" />
+            Çıkış Yap
+          </button>
+        </div>
+      </aside>
       
       {/* Main Content */}
       <div className="flex-1 overflow-auto lg:ml-0 min-w-0">
@@ -1828,3 +1810,910 @@ export default function Dashboard() {
     </div>
   );
 } 
+
+// ApplicationsList Component
+function ApplicationsList() {
+  const [applications, setApplications] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [selectedApp, setSelectedApp] = useState<any>(null);
+  const [showDetails, setShowDetails] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchApplications = async () => {
+      try {
+        const appsQuery = query(collection(db, 'applications'), orderBy('submittedAt', 'desc'));
+        const querySnapshot = await getDocs(appsQuery);
+        const apps = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setApplications(apps);
+      } catch (err) {
+        setError('Failed to load applications.');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchApplications();
+  }, []);
+
+  const handleStatusChange = async (id: string, status: string) => {
+    try {
+      const appRef = doc(db, 'applications', id);
+      await updateDoc(appRef, { status });
+      setApplications(apps => apps.map(app => app.id === id ? { ...app, status } : app));
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      alert('Failed to update status.');
+    }
+  };
+
+  const toggleDetails = (id: string) => {
+    setShowDetails(showDetails === id ? null : id);
+  };
+
+  if (loading) return <div className="p-6 text-center">Loading applications...</div>;
+  if (error) return <div className="p-6 text-red-500">{error}</div>;
+
+  return (
+    <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="px-6 py-4 border-b border-gray-200">
+        <h2 className="text-lg font-semibold text-gray-800">Native Speaker Applications</h2>
+        <p className="text-sm text-gray-600 mt-1">Total: {applications.length} applications</p>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Country</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted At</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {applications.length > 0 ? (
+              applications.map((app) => (
+                <React.Fragment key={app.id}>
+                  <tr className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{app.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{app.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{app.country}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {app.submittedAt ? new Date(app.submittedAt.seconds * 1000).toLocaleDateString('tr-TR') : 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        app.status === 'approved' ? 'bg-green-100 text-green-800'
+                        : app.status === 'rejected' ? 'bg-red-100 text-red-800'
+                        : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {app.status === 'pending' ? 'Beklemede' : 
+                         app.status === 'approved' ? 'Onaylandı' : 
+                         app.status === 'rejected' ? 'Reddedildi' : app.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                      <button
+                        onClick={() => toggleDetails(app.id)}
+                        className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-2 py-1 rounded text-xs"
+                      >
+                        {showDetails === app.id ? 'Gizle' : 'Detaylar'}
+                      </button>
+                      <select 
+                        value={app.status}
+                        onChange={(e) => handleStatusChange(app.id, e.target.value)}
+                        className="text-xs rounded border-gray-300 bg-white"
+                      >
+                        <option value="pending">Beklemede</option>
+                        <option value="approved">Onaylandı</option>
+                        <option value="rejected">Reddedildi</option>
+                      </select>
+                    </td>
+                  </tr>
+                  {showDetails === app.id && (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-4 bg-gray-50">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <h4 className="font-semibold text-gray-800 mb-2">Motivation & Bio</h4>
+                            <p className="text-sm text-gray-700 bg-white p-3 rounded border">
+                              {app.motivation || 'Belirtilmemiş'}
+                            </p>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-800 mb-2">Proof of Native English</h4>
+                            <p className="text-sm text-gray-700 bg-white p-3 rounded border">
+                              {app.proof || 'Belirtilmemiş'}
+                            </p>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-800 mb-2">Zoom Account</h4>
+                            <p className="text-sm text-gray-700 bg-white p-3 rounded border">
+                              {app.zoom || 'Belirtilmemiş'}
+                            </p>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-800 mb-2">Weekly Availability</h4>
+                            <p className="text-sm text-gray-700 bg-white p-3 rounded border">
+                              {app.availability || 'Belirtilmemiş'}
+                            </p>
+                          </div>
+                          <div className="md:col-span-2">
+                            <h4 className="font-semibold text-gray-800 mb-2">User Information</h4>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <span className="font-medium text-gray-600">User ID:</span>
+                                <p className="text-gray-700 bg-white p-2 rounded border font-mono text-xs">
+                                  {app.userId || 'Belirtilmemiş'}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="font-medium text-gray-600">User Email:</span>
+                                <p className="text-gray-700 bg-white p-2 rounded border">
+                                  {app.userEmail || 'Belirtilmemiş'}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">Henüz başvuru bulunmuyor.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// TestimonialsList Component
+function TestimonialsList() {
+  const [testimonials, setTestimonials] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingTestimonial, setEditingTestimonial] = useState<any>(null);
+  const [newTestimonial, setNewTestimonial] = useState({
+    name: '',
+    role: '',
+    content: '',
+    rating: 5,
+    date: ''
+  });
+
+  useEffect(() => {
+    fetchTestimonials();
+  }, []);
+
+  const fetchTestimonials = async () => {
+    try {
+      const testimonialsQuery = query(collection(db, 'testimonials'), orderBy('createdAt', 'desc'));
+      const querySnapshot = await getDocs(testimonialsQuery);
+      const testimonialsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setTestimonials(testimonialsData);
+    } catch (err) {
+      setError('Yorumlar yüklenemedi.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApproveTestimonial = async (id: string) => {
+    try {
+      const testimonialRef = doc(db, 'testimonials', id);
+      await updateDoc(testimonialRef, {
+        approved: true,
+        approvedAt: serverTimestamp()
+      });
+      fetchTestimonials();
+    } catch (error) {
+      console.error('Yorum onaylanamadı:', error);
+      setError('Yorum onaylanırken bir hata oluştu.');
+    }
+  };
+
+  const handleRejectTestimonial = async (id: string) => {
+    if (window.confirm('Bu yorumu reddetmek istediğinizden emin misiniz?')) {
+      try {
+        await deleteDoc(doc(db, 'testimonials', id));
+        fetchTestimonials();
+      } catch (error) {
+        console.error('Yorum reddedilemedi:', error);
+        setError('Yorum reddedilirken bir hata oluştu.');
+      }
+    }
+  };
+
+  const handleAddTestimonial = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTestimonial.name || !newTestimonial.role || !newTestimonial.content) {
+      setError('Lütfen tüm alanları doldurun.');
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, 'testimonials'), {
+        ...newTestimonial,
+        createdAt: serverTimestamp(),
+        approved: true
+      });
+      setShowAddModal(false);
+      setNewTestimonial({ name: '', role: '', content: '', rating: 5, date: '' });
+      fetchTestimonials();
+    } catch (error) {
+      console.error('Yorum eklenemedi:', error);
+      setError('Yorum eklenirken bir hata oluştu.');
+    }
+  };
+
+  const handleEditTestimonial = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTestimonial.name || !editingTestimonial.role || !editingTestimonial.content) {
+      setError('Lütfen tüm alanları doldurun.');
+      return;
+    }
+
+    try {
+      const testimonialRef = doc(db, 'testimonials', editingTestimonial.id);
+      await updateDoc(testimonialRef, {
+        name: editingTestimonial.name,
+        role: editingTestimonial.role,
+        content: editingTestimonial.content,
+        rating: editingTestimonial.rating,
+        date: editingTestimonial.date,
+        updatedAt: serverTimestamp()
+      });
+      setShowEditModal(false);
+      setEditingTestimonial(null);
+      fetchTestimonials();
+    } catch (error) {
+      console.error('Yorum güncellenemedi:', error);
+      setError('Yorum güncellenirken bir hata oluştu.');
+    }
+  };
+
+  const handleDeleteTestimonial = async (id: string) => {
+    if (window.confirm('Bu yorumu silmek istediğinizden emin misiniz?')) {
+      try {
+        await deleteDoc(doc(db, 'testimonials', id));
+        fetchTestimonials();
+      } catch (error) {
+        console.error('Yorum silinemedi:', error);
+        setError('Yorum silinirken bir hata oluştu.');
+      }
+    }
+  };
+
+  if (loading) return <div className="p-6 text-center">Yorumlar yükleniyor...</div>;
+  if (error) return <div className="p-6 text-red-500">{error}</div>;
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+          <h2 className="text-lg font-semibold text-gray-800">Yorum Yönetimi</h2>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+          >
+            + Yeni Yorum Ekle
+          </button>
+        </div>
+      </div>
+
+      {/* Testimonials List */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İsim</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Yorum</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Puan</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kaynak</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {testimonials.length > 0 ? (
+                testimonials.map((testimonial) => (
+                  <tr key={testimonial.id} className={`hover:bg-gray-50 ${!testimonial.approved ? 'bg-yellow-50' : ''}`}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {testimonial.name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {testimonial.role}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
+                      {testimonial.content}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <div className="flex">
+                        {[...Array(testimonial.rating || 5)].map((_, i) => (
+                          <Star key={i} className="h-4 w-4 text-yellow-400 fill-current" />
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {testimonial.approved ? (
+                        <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                          Onaylandı
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
+                          Beklemede
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {testimonial.source === 'notification_response' ? (
+                        <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                          Bildirim Yanıtı
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
+                          Manuel
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {testimonial.date || 'Belirtilmemiş'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                      {!testimonial.approved && (
+                        <>
+                          <button
+                            onClick={() => handleApproveTestimonial(testimonial.id)}
+                            className="text-green-600 hover:text-green-900 bg-green-50 px-2 py-1 rounded text-xs"
+                          >
+                            Onayla
+                          </button>
+                          <button
+                            onClick={() => handleRejectTestimonial(testimonial.id)}
+                            className="text-red-600 hover:text-red-900 bg-red-50 px-2 py-1 rounded text-xs"
+                          >
+                            Reddet
+                          </button>
+                        </>
+                      )}
+                      <button
+                        onClick={() => {
+                          setEditingTestimonial(testimonial);
+                          setShowEditModal(true);
+                        }}
+                        className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-2 py-1 rounded text-xs"
+                      >
+                        Düzenle
+                      </button>
+                      <button
+                        onClick={() => handleDeleteTestimonial(testimonial.id)}
+                        className="text-red-600 hover:text-red-900 bg-red-50 px-2 py-1 rounded text-xs"
+                      >
+                        Sil
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={8} className="px-6 py-4 text-center text-sm text-gray-500">
+                    Henüz yorum bulunmuyor.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Add Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg w-full max-w-lg overflow-hidden">
+            <div className="px-6 py-4 bg-green-50 border-b border-green-100 flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-green-800">Yeni Yorum Ekle</h3>
+              <button 
+                onClick={() => setShowAddModal(false)}
+                className="text-gray-500 hover:text-gray-700 focus:outline-none"
+              >
+                <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <form onSubmit={handleAddTestimonial} className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    İsim <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={newTestimonial.name}
+                    onChange={(e) => setNewTestimonial({...newTestimonial, name: e.target.value})}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Kullanıcı adı"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Rol <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={newTestimonial.role}
+                    onChange={(e) => setNewTestimonial({...newTestimonial, role: e.target.value})}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Meslek/Rol"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Yorum <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    value={newTestimonial.content}
+                    onChange={(e) => setNewTestimonial({...newTestimonial, content: e.target.value})}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Kullanıcı yorumu"
+                    rows={4}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Puan
+                    </label>
+                    <select
+                      value={newTestimonial.rating}
+                      onChange={(e) => setNewTestimonial({...newTestimonial, rating: parseInt(e.target.value)})}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                      <option value={5}>5 Yıldız</option>
+                      <option value={4}>4 Yıldız</option>
+                      <option value={3}>3 Yıldız</option>
+                      <option value={2}>2 Yıldız</option>
+                      <option value={1}>1 Yıldız</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Tarih
+                    </label>
+                    <input
+                      type="text"
+                      value={newTestimonial.date}
+                      onChange={(e) => setNewTestimonial({...newTestimonial, date: e.target.value})}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                      placeholder="1 hafta önce"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-6 flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                >
+                  İptal
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700"
+                >
+                  Yorum Ekle
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {showEditModal && editingTestimonial && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg w-full max-w-lg overflow-hidden">
+            <div className="px-6 py-4 bg-blue-50 border-b border-blue-100 flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-blue-800">Yorum Düzenle</h3>
+              <button 
+                onClick={() => setShowEditModal(false)}
+                className="text-gray-500 hover:text-gray-700 focus:outline-none"
+              >
+                <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <form onSubmit={handleEditTestimonial} className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    İsim <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={editingTestimonial.name}
+                    onChange={(e) => setEditingTestimonial({...editingTestimonial, name: e.target.value})}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Kullanıcı adı"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Rol <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={editingTestimonial.role}
+                    onChange={(e) => setEditingTestimonial({...editingTestimonial, role: e.target.value})}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Meslek/Rol"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Yorum <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    value={editingTestimonial.content}
+                    onChange={(e) => setEditingTestimonial({...editingTestimonial, content: e.target.value})}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Kullanıcı yorumu"
+                    rows={4}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Puan
+                    </label>
+                    <select
+                      value={editingTestimonial.rating}
+                      onChange={(e) => setEditingTestimonial({...editingTestimonial, rating: parseInt(e.target.value)})}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value={5}>5 Yıldız</option>
+                      <option value={4}>4 Yıldız</option>
+                      <option value={3}>3 Yıldız</option>
+                      <option value={2}>2 Yıldız</option>
+                      <option value={1}>1 Yıldız</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Tarih
+                    </label>
+                    <input
+                      type="text"
+                      value={editingTestimonial.date}
+                      onChange={(e) => setEditingTestimonial({...editingTestimonial, date: e.target.value})}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="1 hafta önce"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-6 flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                >
+                  İptal
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                >
+                  Güncelle
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// NotificationsManager Component
+function NotificationsManager() {
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [notificationType, setNotificationType] = useState('testimonial');
+  const [customMessage, setCustomMessage] = useState('');
+  const [notificationHistory, setNotificationHistory] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchUsers();
+    fetchNotificationHistory();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const usersQuery = query(collection(db, 'users'), where('role', '==', 'student'));
+      const querySnapshot = await getDocs(usersQuery);
+      const usersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setUsers(usersData);
+    } catch (err) {
+      console.error('Kullanıcılar yüklenemedi:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchNotificationHistory = async () => {
+    try {
+      const historyQuery = query(collection(db, 'notifications'), orderBy('sentAt', 'desc'));
+      const querySnapshot = await getDocs(historyQuery);
+      const historyData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setNotificationHistory(historyData);
+    } catch (err) {
+      console.error('Bildirim geçmişi yüklenemedi:', err);
+    }
+  };
+
+  const notificationTemplates = {
+    testimonial: {
+      title: 'Deneyiminizi Paylaşın! 🌟',
+      message: 'Merhaba! SpeakNest deneyiminizi diğer öğrencilerle paylaşmak ister misiniz? Kısa bir yorum bırakarak hem bize destek olabilir hem de diğer öğrencilere ilham verebilirsiniz. Yorumunuz anasayfamızda yayınlanacak!'
+    },
+    feedback: {
+      title: 'Geri Bildiriminizi Alalım 📝',
+      message: 'SpeakNest deneyiminizi nasıl buldunuz? Gelişmemize yardımcı olmak için kısa bir geri bildirim paylaşabilir misiniz?'
+    },
+    reminder: {
+      title: 'İngilizce Pratiğinizi Unutmayın! 📚',
+      message: 'Merhaba! İngilizce öğrenme yolculuğunuza devam etmek için derslerinizi kontrol etmeyi unutmayın. Başarılarınızı görmek bizi mutlu ediyor!'
+    },
+    custom: {
+      title: 'Özel Mesaj',
+      message: customMessage
+    }
+  };
+
+  const handleSelectAll = () => {
+    if (selectedUsers.length === users.length) {
+      setSelectedUsers([]);
+    } else {
+      setSelectedUsers(users.map(user => user.id));
+    }
+  };
+
+  const handleUserToggle = (userId: string) => {
+    setSelectedUsers(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
+  const sendNotifications = async () => {
+    if (selectedUsers.length === 0) {
+      alert('Lütfen en az bir kullanıcı seçin.');
+      return;
+    }
+
+    setSending(true);
+    const template = notificationTemplates[notificationType as keyof typeof notificationTemplates];
+    
+    try {
+      // Her seçili kullanıcı için bildirim oluştur
+      const notificationPromises = selectedUsers.map(userId => 
+        addDoc(collection(db, 'notifications'), {
+          userId,
+          title: template.title,
+          message: template.message,
+          type: notificationType,
+          sentAt: serverTimestamp(),
+          status: 'sent',
+          requiresResponse: notificationType === 'testimonial',
+          read: false
+        })
+      );
+
+      await Promise.all(notificationPromises);
+
+      // Bildirim geçmişini güncelle
+      await fetchNotificationHistory();
+      
+      alert(`${selectedUsers.length} kullanıcıya bildirim gönderildi!`);
+      setSelectedUsers([]);
+    } catch (error) {
+      console.error('Bildirim gönderilemedi:', error);
+      alert('Bildirim gönderilirken bir hata oluştu.');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (loading) return <div className="p-6 text-center">Kullanıcılar yükleniyor...</div>;
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-800">Bildirim Yönetimi</h2>
+          <p className="text-sm text-gray-600 mt-1">Kullanıcılara toplu bildirim gönderin</p>
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Bildirim Gönderme */}
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h3 className="text-md font-semibold text-gray-800">Bildirim Gönder</h3>
+          </div>
+          <div className="p-6 space-y-4">
+            {/* Bildirim Tipi */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Bildirim Tipi
+              </label>
+              <select
+                value={notificationType}
+                onChange={(e) => setNotificationType(e.target.value)}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="testimonial">Yorum İsteği</option>
+                <option value="feedback">Geri Bildirim İsteği</option>
+                <option value="reminder">Hatırlatma</option>
+                <option value="custom">Özel Mesaj</option>
+              </select>
+            </div>
+
+            {/* Özel Mesaj */}
+            {notificationType === 'custom' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Özel Mesaj
+                </label>
+                <textarea
+                  value={customMessage}
+                  onChange={(e) => setCustomMessage(e.target.value)}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows={4}
+                  placeholder="Kullanıcılara göndermek istediğiniz mesajı yazın..."
+                />
+              </div>
+            )}
+
+            {/* Mesaj Önizleme */}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">Mesaj Önizleme:</h4>
+              <div className="text-sm text-gray-600">
+                <div className="font-medium mb-1">{notificationTemplates[notificationType as keyof typeof notificationTemplates].title}</div>
+                <div>{notificationTemplates[notificationType as keyof typeof notificationTemplates].message}</div>
+              </div>
+            </div>
+
+            {/* Kullanıcı Seçimi */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-sm font-medium text-gray-700">
+                  Kullanıcılar ({selectedUsers.length}/{users.length})
+                </label>
+                <button
+                  onClick={handleSelectAll}
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                >
+                  {selectedUsers.length === users.length ? 'Tümünü Kaldır' : 'Tümünü Seç'}
+                </button>
+              </div>
+              <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-md">
+                {users.map((user) => (
+                  <label key={user.id} className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedUsers.includes(user.id)}
+                      onChange={() => handleUserToggle(user.id)}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="ml-3 text-sm text-gray-700">{user.email}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Gönder Butonu */}
+            <button
+              onClick={sendNotifications}
+              disabled={sending || selectedUsers.length === 0}
+              className={`w-full py-2 px-4 rounded-md text-sm font-medium text-white transition-colors ${
+                sending || selectedUsers.length === 0
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-blue-600 hover:bg-blue-700'
+              }`}
+            >
+              {sending ? 'Gönderiliyor...' : `${selectedUsers.length} Kullanıcıya Gönder`}
+            </button>
+          </div>
+        </div>
+
+        {/* Bildirim Geçmişi */}
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h3 className="text-md font-semibold text-gray-800">Bildirim Geçmişi</h3>
+          </div>
+          <div className="p-6">
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {notificationHistory.length > 0 ? (
+                notificationHistory.map((notification) => (
+                  <div key={notification.id} className="border border-gray-200 rounded-lg p-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="font-medium text-sm text-gray-900">{notification.title}</div>
+                        <div className="text-xs text-gray-500 mt-1">{notification.message}</div>
+                        <div className="text-xs text-gray-400 mt-2">
+                          {notification.sentAt ? new Date(notification.sentAt.seconds * 1000).toLocaleString('tr-TR') : 'Tarih belirtilmemiş'}
+                        </div>
+                        {notification.response && (
+                          <div className="mt-2 p-2 bg-green-50 rounded border border-green-200">
+                            <div className="text-xs font-medium text-green-800 mb-1">Kullanıcı Yanıtı:</div>
+                            <div className="text-xs text-green-700">{notification.response}</div>
+                            <div className="text-xs text-green-600 mt-1">
+                              {notification.responseAt ? new Date(notification.responseAt.seconds * 1000).toLocaleString('tr-TR') : 'Tarih belirtilmemiş'}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          notification.status === 'sent' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {notification.status === 'sent' ? 'Gönderildi' : 'Beklemede'}
+                        </span>
+                        {notification.requiresResponse && (
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${
+                            notification.response ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'
+                          }`}>
+                            {notification.response ? 'Yanıtlandı' : 'Yanıt Bekliyor'}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center text-gray-500 text-sm py-8">
+                  Henüz bildirim gönderilmemiş.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

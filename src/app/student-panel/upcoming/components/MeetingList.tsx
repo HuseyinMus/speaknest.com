@@ -3,7 +3,6 @@ import { MeetingCard } from './MeetingCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 
 interface MeetingListProps {
   meetings: Meeting[];
@@ -13,16 +12,14 @@ interface MeetingListProps {
 }
 
 export function MeetingList({ meetings, favoriteMeetings, onJoin, onFavorite }: MeetingListProps) {
-  const { t } = useTranslation();
-
   if (meetings.length === 0) {
     return (
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12">
           <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
-          <p className="text-lg text-muted-foreground mb-4">{t('noUpcomingMeetings')}</p>
+          <p className="text-lg text-muted-foreground mb-4">Henüz bir görüşme bulunmuyor.</p>
           <Button variant="default" onClick={() => window.location.href = '/student-panel/sessions'}>
-            {t('findMeetings')}
+            Görüşme Bul
           </Button>
         </CardContent>
       </Card>

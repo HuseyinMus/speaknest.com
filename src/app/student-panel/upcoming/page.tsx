@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Meeting } from '@/lib/types';
 import { MeetingList } from './components/MeetingList';
 import { db, collections } from '@/lib/firebase/config';
@@ -9,7 +8,6 @@ import { collection, query, where, getDocs, doc, getDoc, updateDoc } from 'fireb
 import { useAuth } from '@/lib/context/AuthContext';
 
 export default function UpcomingMeetingsPage() {
-  const { t } = useTranslation();
   const { user } = useAuth();
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [favoriteMeetings, setFavoriteMeetings] = useState<string[]>([]);
@@ -86,7 +84,7 @@ export default function UpcomingMeetingsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">{t('upcomingMeetings')}</h1>
+      <h1 className="text-3xl font-bold mb-8">Yaklaşan Toplantılar</h1>
       <MeetingList
         meetings={meetings}
         favoriteMeetings={favoriteMeetings}

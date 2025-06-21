@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Clock, Users, MapPin, Star } from 'lucide-react';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { useTranslation } from 'react-i18next';
 
 interface MeetingCardProps {
   meeting: Meeting;
@@ -14,8 +13,6 @@ interface MeetingCardProps {
 }
 
 export function MeetingCard({ meeting, onJoin, onFavorite, isFavorite = false }: MeetingCardProps) {
-  const { t } = useTranslation();
-
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader className="relative">
@@ -37,11 +34,11 @@ export function MeetingCard({ meeting, onJoin, onFavorite, isFavorite = false }:
           </div>
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-muted-foreground" />
-            <span>{meeting.participants.length}/{meeting.maxParticipants} {t('participants')}</span>
+            <span>{meeting.participants.length}/{meeting.maxParticipants} katılımcı</span>
           </div>
           <div className="flex items-center gap-2">
             <MapPin className="h-4 w-4 text-muted-foreground" />
-            <span>{t(`level_${meeting.level}`)} - {t(`topic_${meeting.topic}`)}</span>
+            <span>{meeting.level} - {meeting.topic}</span>
           </div>
           <div className="flex items-center gap-2">
             <img
@@ -52,7 +49,7 @@ export function MeetingCard({ meeting, onJoin, onFavorite, isFavorite = false }:
             <span className="text-sm text-muted-foreground">{meeting.host.name}</span>
           </div>
           <Button className="w-full" onClick={() => onJoin(meeting.id)}>
-            {t('joinMeeting')}
+            Katıl
           </Button>
         </div>
       </CardContent>

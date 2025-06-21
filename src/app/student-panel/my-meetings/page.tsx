@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/lib/context/AuthContext';
 import { db, collections } from '@/lib/firebase/config';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
@@ -26,7 +25,6 @@ interface Meeting {
 }
 
 export default function MyMeetingsPage() {
-  const { t } = useTranslation();
   const { user } = useAuth();
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,12 +93,12 @@ export default function MyMeetingsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">{t('myMeetings')}</h1>
+      <h1 className="text-3xl font-bold mb-8">Toplantılarım</h1>
 
       {meetings.length === 0 ? (
         <div className="text-center py-12">
-          <h2 className="text-xl font-semibold mb-4">{t('noMeetingsYet')}</h2>
-          <p className="text-muted-foreground">{t('myMeetingsDescription')}</p>
+          <h2 className="text-xl font-semibold mb-4">Henüz toplantınız yok</h2>
+          <p className="text-muted-foreground">Toplantılarınızı burada görebilirsiniz.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -115,12 +113,12 @@ export default function MyMeetingsPage() {
                   <div className="flex items-center text-sm">
                     <Users className="mr-2 h-4 w-4" />
                     <span>
-                      {meeting.participantCount}/{meeting.maxParticipants} {t('participants')}
+                      {meeting.participantCount}/{meeting.maxParticipants} katılımcı
                     </span>
                   </div>
                   <div className="flex items-center text-sm">
                     <MessageCircle className="mr-2 h-4 w-4" />
-                    <span>{t(`level_${meeting.level}`)}</span>
+                    <span>{meeting.level}</span>
                   </div>
                   <div className="flex items-center text-sm">
                     <Clock className="mr-2 h-4 w-4" />
@@ -137,7 +135,7 @@ export default function MyMeetingsPage() {
                   disabled={!isMeetingActive(meeting) || !meeting.meetUrl}
                 >
                   <Video className="mr-2 h-4 w-4" />
-                  {isMeetingActive(meeting) ? t('joinMeeting') : t('meetingNotStarted')}
+                  {isMeetingActive(meeting) ? 'Toplantıya katıl' : 'Toplantı henüz başlamadı'}
                 </Button>
               </CardFooter>
             </Card>

@@ -6,8 +6,6 @@ import { useRouter } from 'next/navigation';
 import { doc, getDoc, collection, query, where, getDocs, orderBy, addDoc, serverTimestamp } from 'firebase/firestore';
 import Image from 'next/image';
 import { Menu, X, Home, MessageCircle, Users, User, BarChart, Clock, Settings, LogOut, Calendar, CheckSquare, Plus, MinusCircle } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useToast } from '@/lib/context/ToastContext';
 import { Shimmer, ShimmerCard, ShimmerList } from '@/components/ui/Shimmer';
 
@@ -58,7 +56,6 @@ interface FirebaseError extends Error {
 }
 
 export default function ProUserPanel() {
-  const { t } = useTranslation();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -110,12 +107,12 @@ export default function ProUserPanel() {
       // Hata mesajını daha kullanıcı dostu hale getir
       if (err instanceof Error && 'code' in err && (err as FirebaseError).code === 'permission-denied') {
         console.log('Yetki hatası: Meetings koleksiyonuna erişim izni yok');
-        setError(t('meetingsAccessError', 'Toplantılara erişim izniniz yok.'));
+        setError('Toplantılara erişim izniniz yok.');
       } else {
-        setError(t('meetingsDataError', 'Toplantı verileri alınırken bir hata oluştu.'));
+        setError('Toplantı verileri alınırken bir hata oluştu.');
       }
     }
-  }, [t, setError]);
+  }, [setError]);
   
   const getRedirectPath = (role: string): string => {
     switch (role) {
@@ -150,13 +147,13 @@ export default function ProUserPanel() {
         // Aktif toplantıları getir
         await fetchMeetingData(userId);
       } else {
-        setError(t('userProfileNotFound', 'Kullanıcı profili bulunamadı.'));
+        setError('Kullanıcı profili bulunamadı.');
       }
     } catch (err) {
       console.error('Profil verisi alınamadı:', err);
-      setError(t('profileDataError', 'Profil verileri alınırken bir hata oluştu.'));
+      setError('Profil verileri alınırken bir hata oluştu.');
     }
-  }, [router, t, fetchMeetingData, setError]);
+  }, [router, fetchMeetingData, setError]);
   
   useEffect(() => {
     const checkAuth = async () => {
@@ -175,17 +172,17 @@ export default function ProUserPanel() {
         return () => unsubscribe();
       } catch (err) {
         console.error('Auth kontrolü sırasında hata:', err);
-        setError(t('sessionCheckError', 'Toplantı kontrolü sırasında bir hata oluştu.'));
+        setError('Toplantı kontrolü sırasında bir hata oluştu.');
         setLoading(false);
       }
     };
     
     checkAuth();
-  }, [router, fetchUserProfile, t]);
+  }, [router, fetchUserProfile]);
   
   // Toplantı seviyesi için çevirileri manuel olarak yapan yardımcı fonksiyon
   const getLevelTranslation = (level: string) => {
-    return t(`level_${level}`, getLevelFallback(level));
+    return getLevelFallback(level);
   };
 
   // Level için fallback değerlerini döndüren yardımcı fonksiyon
@@ -201,7 +198,7 @@ export default function ProUserPanel() {
 
   // Toplantı konusu için çevirileri manuel olarak yapan yardımcı fonksiyon
   const getTopicTranslation = (topic: string) => {
-    return t(`topic_${topic}`, getTopicFallback(topic));
+    return getTopicFallback(topic);
   };
 
   // Topic için fallback değerlerini döndüren yardımcı fonksiyon
@@ -255,13 +252,13 @@ export default function ProUserPanel() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="bg-white border border-slate-200 text-slate-700 px-6 py-5 rounded-lg max-w-md shadow-sm">
-          <h2 className="text-lg font-semibold mb-3 text-red-600">{t('error')}</h2>
+          <h2 className="text-lg font-semibold mb-3 text-red-600">Hata</h2>
           <p className="text-slate-600">{error}</p>
           <button 
             onClick={() => router.push('/login')}
             className="mt-5 w-full py-2 px-4 rounded-md bg-slate-700 text-white font-medium hover:bg-slate-800 transition-colors"
           >
-            {t('returnToLogin')}
+            Giriş Sayfasına Dön
           </button>
         </div>
       </div>
@@ -270,21 +267,21 @@ export default function ProUserPanel() {
   
   // Menü öğeleri - ProUser için özelleştirilmiş
   const menuItems = [
-    { id: 'dashboard', label: t('home'), icon: <Home size={18} /> },
-    { id: 'my-meetings', label: t('myMeetings'), icon: <Calendar size={18} /> },
-    { id: 'create-meeting', label: t('createMeeting'), icon: <MessageCircle size={18} /> },
-    { id: 'participants', label: t('participants'), icon: <Users size={18} /> },
-    { id: 'evaluations', label: t('evaluations'), icon: <CheckSquare size={18} /> },
-    { id: 'profile', label: t('profile'), icon: <User size={18} /> },
-    { id: 'statistics', label: t('statistics'), icon: <BarChart size={18} /> },
-    { id: 'settings', label: t('settings'), icon: <Settings size={18} /> },
+    { id: 'dashboard', label: 'Ana Sayfa', icon: <Home size={18} /> },
+    { id: 'my-meetings', label: 'Toplantılarım', icon: <Calendar size={18} /> },
+    { id: 'create-meeting', label: 'Toplantı Oluştur', icon: <MessageCircle size={18} /> },
+    { id: 'participants', label: 'Katılımcılar', icon: <Users size={18} /> },
+    { id: 'evaluations', label: 'Değerlendirmeler', icon: <CheckSquare size={18} /> },
+    { id: 'profile', label: 'Profil', icon: <User size={18} /> },
+    { id: 'statistics', label: 'İstatistikler', icon: <BarChart size={18} /> },
+    { id: 'settings', label: 'Ayarlar', icon: <Settings size={18} /> },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex flex-col">
       {/* Mobil menü butonu */}
       <div className="bg-white p-4 flex justify-between items-center md:hidden border-b shadow-sm sticky top-0 z-50">
-        <h1 className="text-lg font-semibold text-slate-800">{t('appName')}</h1>
+        <h1 className="text-lg font-semibold text-slate-800">Uygulama Adı</h1>
         <div className="flex items-center gap-2">
           <button 
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -305,7 +302,7 @@ export default function ProUserPanel() {
               {userProfile?.photoURL ? (
                 <Image 
                   src={userProfile.photoURL} 
-                  alt={userProfile.displayName || t('profile')}
+                  alt={userProfile.displayName || 'Profil'}
                   width={40}
                   height={40}
                   className="rounded-full border-2 border-white/30"
@@ -317,10 +314,10 @@ export default function ProUserPanel() {
               )}
               <div>
                 <div className="font-medium">
-                  {userProfile?.displayName || `${userProfile?.firstName} ${userProfile?.lastName}` || t('conversationHost')}
+                  {userProfile?.displayName || `${userProfile?.firstName} ${userProfile?.lastName}` || 'Konuşma Sunucusu'}
                 </div>
                 <div className="text-xs text-white/80">
-                  {userProfile?.role === 'proUser' ? t('conversationHost') : userProfile?.role}
+                  {userProfile?.role === 'proUser' ? 'Konuşma Sunucusu' : userProfile?.role}
                 </div>
               </div>
             </div>
@@ -349,14 +346,14 @@ export default function ProUserPanel() {
                   className="flex items-center gap-3 w-full py-2.5 px-3 rounded-md text-sm text-red-600 hover:bg-red-50 transition-all duration-200"
                 >
                   <LogOut size={18} />
-                  {t('logout')}
+                  Çıkış
                 </button>
               </li>
             </ul>
             
             <div className="mt-6 px-3 py-4 border-t pt-4">
-              <p className="text-xs text-slate-500 mb-2">{t('selectLanguage')}</p>
-              <LanguageSwitcher variant="select" className="w-full" />
+              <p className="text-xs text-slate-500 mb-2">Dil Seçin</p>
+              {/* <LanguageSwitcher variant="select" className="w-full" /> */}
             </div>
           </div>
         </div>
@@ -373,7 +370,7 @@ export default function ProUserPanel() {
               {activeTab === 'profile' && <User size={20} className="text-blue-600" />}
               {activeTab === 'statistics' && <BarChart size={20} className="text-blue-600" />}
               {activeTab === 'settings' && <Settings size={20} className="text-blue-600" />}
-              {menuItems.find(item => item.id === activeTab)?.label || t('appName')}
+              {menuItems.find(item => item.id === activeTab)?.label || 'Uygulama Adı'}
             </h1>
           </div>
           
@@ -392,23 +389,23 @@ export default function ProUserPanel() {
             {/* Hoş geldin kartı */}
             <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl shadow-lg p-6 border border-blue-400/30">
               <h2 className="text-2xl font-semibold text-white mb-2">
-                {t('welcomeMessage', 'Hoş geldiniz, {{name}}').replace('{{name}}', userProfile?.displayName || userProfile?.firstName || t('conversationHost', 'Konuşma Sunucusu'))}
+                Hoş geldiniz, {userProfile?.displayName || userProfile?.firstName || "Kullanıcı"}
               </h2>
-              <p className="text-white/90 mb-6">{t('hostDayMessage', 'Konuşma sunucusu olarak bugün yeni bir toplantı oluşturabilir ve İngilizce pratik yapmak isteyen öğrencilere yardımcı olabilirsiniz.')}</p>
+              <p className="text-white/90 mb-6">Konuşma sunucusu olarak bugün yeni bir toplantı oluşturabilir ve İngilizce pratik yapmak isteyen öğrencilere yardımcı olabilirsiniz.</p>
               <div className="flex flex-wrap gap-3">
                 <button 
                   onClick={() => setActiveTab('create-meeting')}
                   className="px-5 py-2.5 bg-white hover:bg-blue-50 text-blue-700 rounded-lg transition-colors text-sm font-medium shadow-sm flex items-center gap-2"
                 >
                   <Plus size={16} />
-                  {t('createNewMeeting', 'Yeni Toplantı Oluştur')}
+                  Yeni Toplantı Oluştur
                 </button>
                 <button 
                   onClick={() => setActiveTab('participants')}
                   className="px-5 py-2.5 bg-blue-700/30 hover:bg-blue-700/40 text-white rounded-lg transition-colors text-sm font-medium shadow-sm border border-white/10 flex items-center gap-2"
                 >
                   <Users size={16} />
-                  {t('viewParticipants', 'Katılımcıları Görüntüle')}
+                  Katılımcıları Görüntüle
                 </button>
               </div>
             </div>
@@ -418,7 +415,7 @@ export default function ProUserPanel() {
               <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-3.5 flex items-center justify-between">
                 <h2 className="text-base font-medium text-white flex items-center gap-2">
                   <Calendar size={18} />
-                  {t('activeMeetings', 'Aktif Toplantılar')}
+                  Aktif Toplantılar
                 </h2>
                 <button 
                   onClick={() => setActiveTab('create-meeting')}
@@ -426,7 +423,7 @@ export default function ProUserPanel() {
                 >
                   <span className="flex items-center gap-1.5">
                     <Plus size={12} />
-                    {t('createNewMeeting', 'Yeni Toplantı Oluştur')}
+                    Yeni Toplantı Oluştur
                   </span>
                 </button>
               </div>
@@ -445,10 +442,10 @@ export default function ProUserPanel() {
                               meeting.status === 'completed' ? 'bg-gray-100 text-gray-700' : 
                               'bg-red-100 text-red-700'
                             }`}>
-                              {meeting.status === 'active' && t('activeStatus', 'Aktif')}
-                              {meeting.status === 'scheduled' && t('scheduledStatus', 'Zamanlanmış')}
-                              {meeting.status === 'completed' && t('completedStatus', 'Tamamlandı')}
-                              {meeting.status === 'cancelled' && t('cancelledStatus', 'İptal Edildi')}
+                              {meeting.status === 'active' && 'Aktif'}
+                              {meeting.status === 'scheduled' && 'Zamanlanmış'}
+                              {meeting.status === 'completed' && 'Tamamlandı'}
+                              {meeting.status === 'cancelled' && 'İptal Edildi'}
                             </span>
                             
                             {/* Seviye */}
@@ -465,11 +462,11 @@ export default function ProUserPanel() {
                           </span>
                           <span className="px-2.5 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium flex items-center gap-1">
                             <Users size={12} />
-                            {meeting.participants?.length || 0}/{meeting.participantCount || 6} {t('participants', 'katılımcı')}
+                            {meeting.participants?.length || 0}/{meeting.participantCount || 6} katılımcı
                           </span>
                           <span className="px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium flex items-center gap-1">
                             <Clock size={12} />
-                            {meeting.startTime instanceof Date ? meeting.startTime.toLocaleDateString() : t('notSpecified', 'Belirtilmemiş')}, 
+                            {meeting.startTime instanceof Date ? meeting.startTime.toLocaleDateString() : 'Belirtilmemiş'}, 
                             {meeting.startTime instanceof Date ? meeting.startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                           </span>
                         </div>
@@ -483,7 +480,7 @@ export default function ProUserPanel() {
                                   <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14v-4z" fill="#2D8CFF" stroke="none" />
                                   <rect x="3" y="6" width="12" height="12" rx="2" ry="2" fill="#2D8CFF" fillOpacity="0.8" stroke="none" />
                                 </svg>
-                                {t('meetUrl', 'Zoom Toplantı Bağlantısı')}:
+                                Zoom Toplantı Bağlantısı:
                               </span>
                               <div className="flex gap-2">
                                 <button 
@@ -491,11 +488,11 @@ export default function ProUserPanel() {
                                   onClick={() => {
                                     if (meeting.meetUrl) {
                                       navigator.clipboard.writeText(meeting.meetUrl);
-                                      toast.success(t('meetingLinkCopied', 'Toplantı bağlantısı panoya kopyalandı'));
+                                      toast.success('Toplantı bağlantısı panoya kopyalandı');
                                     }
                                   }}
                                 >
-                                  {t('copyMeetingLink', 'Kopyala')}
+                                  Kopyala
                                 </button>
                                 <a 
                                   href={meeting.meetUrl} 
@@ -503,13 +500,13 @@ export default function ProUserPanel() {
                                   rel="noopener noreferrer"
                                   className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded-md transition-colors flex items-center gap-1"
                                 >
-                                  {t('joinMeeting', 'Katıl')}
+                                  Katıl
                                 </a>
                               </div>
                             </div>
                             {meeting.zoomMeetingId && (
                               <div className="mt-2 text-xs text-slate-500">
-                                {t('meetingId', 'Toplantı ID')}: {meeting.zoomMeetingId}
+                                Toplantı ID: {meeting.zoomMeetingId}
                               </div>
                             )}
                           </div>
@@ -520,14 +517,14 @@ export default function ProUserPanel() {
                             className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors text-sm font-medium flex items-center gap-1"
                             onClick={() => console.log('Edit meeting:', meeting.id)}
                           >
-                            {t('edit', 'Düzenle')} <Settings size={14} />
+                            Düzenle <Settings size={14} />
                           </button>
                           {meeting.status === 'active' && (
                             <button 
                               className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-lg hover:from-blue-700 hover:to-indigo-800 transition-colors text-sm font-medium shadow-sm flex items-center gap-1"
                               onClick={() => router.push(`/meetings/${meeting.id}`)}
                             >
-                              {t('goToMeeting', 'Toplantıya Git')} <Calendar size={14} />
+                              Toplantıya Git <Calendar size={14} />
                             </button>
                           )}
                         </div>
@@ -537,13 +534,13 @@ export default function ProUserPanel() {
                 ) : (
                   <div className="text-center py-10 px-4 rounded-xl bg-slate-50/50 border border-slate-100">
                     <Calendar size={40} className="mx-auto text-slate-400 mb-3" />
-                    <p className="text-slate-600 mb-4">{t('noActiveMeetings', 'Aktif toplantınız bulunmuyor.')}</p>
+                    <p className="text-slate-600 mb-4">Aktif toplantınız bulunmuyor.</p>
                     <button 
                       className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-lg hover:from-blue-700 hover:to-indigo-800 transition-colors text-sm font-medium shadow-sm inline-flex items-center gap-2"
                       onClick={() => setActiveTab('create-meeting')}
                     >
                       <Plus size={16} />
-                      {t('createNewMeeting', 'Yeni Toplantı Oluştur')}
+                      Yeni Toplantı Oluştur
                     </button>
                   </div>
                 )}
@@ -553,7 +550,7 @@ export default function ProUserPanel() {
                     className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors inline-flex items-center gap-1"
                     onClick={() => setActiveTab('my-meetings')}
                   >
-                    {t('viewAllMeetings', 'Tüm Toplantıları Görüntüle')} <Calendar size={16} />
+                    Tüm Toplantıları Görüntüle <Calendar size={16} />
                   </button>
                 </div>
               </div>
@@ -564,19 +561,19 @@ export default function ProUserPanel() {
               <div className="bg-gradient-to-r from-slate-700 to-slate-800 px-6 py-3.5 flex items-center justify-between">
                 <h2 className="text-base font-medium text-white flex items-center gap-2">
                   <Clock size={18} />
-                  {t('upcomingMeetings', 'Yaklaşan Toplantılar')}
+                  Yaklaşan Toplantılar
                 </h2>
               </div>
               <div className="p-6">
                 <div className="text-center py-10 px-4 rounded-xl bg-slate-50/50 border border-slate-100">
                   <Clock size={40} className="mx-auto text-slate-400 mb-3" />
-                  <p className="text-slate-600 mb-4">{t('noUpcomingMeetingsScheduled', 'Yaklaşan toplantı planlanmamış.')}</p>
+                  <p className="text-slate-600 mb-4">Yaklaşan toplantı planlanmamış.</p>
                   <button 
                     className="px-5 py-2.5 bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-lg hover:from-slate-700 hover:to-slate-800 transition-colors text-sm font-medium shadow-sm inline-flex items-center gap-2"
                     onClick={() => setActiveTab('create-meeting')}
                   >
                     <Plus size={16} />
-                    {t('scheduleMeeting', 'Toplantı Planla')}
+                    Toplantı Planla
                   </button>
                 </div>
               </div>
@@ -586,7 +583,7 @@ export default function ProUserPanel() {
       
       case 'create-meeting':
         if (!userProfile) {
-          return <div>{t('profileNotFound', 'Profil bulunamadı')}</div>;
+          return <div>Profil bulunamadı</div>;
         }
         return <CreateMeetingForm 
           userId={user?.uid} 
@@ -600,9 +597,9 @@ export default function ProUserPanel() {
             <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl shadow-md p-6 text-white">
               <h2 className="text-xl font-semibold mb-1 flex items-center gap-2">
                 <Calendar size={20} />
-                {t('myMeetings', 'Toplantılarım')}
+                Toplantılarım
               </h2>
-              <p className="text-white/80">{t('myMeetingsDescription', 'Oluşturduğunuz ve katıldığınız tüm toplantıları görüntüleyin.')}</p>
+              <p className="text-white/80">Oluşturduğunuz ve katıldığınız tüm toplantıları görüntüleyin.</p>
             </div>
             
             {activeMeetings.length > 0 ? (
@@ -620,10 +617,10 @@ export default function ProUserPanel() {
                             meeting.status === 'completed' ? 'bg-gray-100 text-gray-700' : 
                             'bg-red-100 text-red-700'
                           }`}>
-                            {meeting.status === 'active' && t('activeStatus', 'Aktif')}
-                            {meeting.status === 'scheduled' && t('scheduledStatus', 'Zamanlanmış')}
-                            {meeting.status === 'completed' && t('completedStatus', 'Tamamlandı')}
-                            {meeting.status === 'cancelled' && t('cancelledStatus', 'İptal Edildi')}
+                            {meeting.status === 'active' && 'Aktif'}
+                            {meeting.status === 'scheduled' && 'Zamanlanmış'}
+                            {meeting.status === 'completed' && 'Tamamlandı'}
+                            {meeting.status === 'cancelled' && 'İptal Edildi'}
                           </span>
                           
                           {/* Seviye */}
@@ -640,11 +637,11 @@ export default function ProUserPanel() {
                         </span>
                         <span className="px-2.5 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium flex items-center gap-1">
                           <Users size={12} />
-                          {meeting.participants?.length || 0}/{meeting.participantCount || 6} {t('participants', 'katılımcı')}
+                          {meeting.participants?.length || 0}/{meeting.participantCount || 6} katılımcı
                         </span>
                         <span className="px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium flex items-center gap-1">
                           <Clock size={12} />
-                          {meeting.startTime instanceof Date ? meeting.startTime.toLocaleDateString() : t('notSpecified', 'Belirtilmemiş')}, 
+                          {meeting.startTime instanceof Date ? meeting.startTime.toLocaleDateString() : 'Belirtilmemiş'}, 
                           {meeting.startTime instanceof Date ? meeting.startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                         </span>
                       </div>
@@ -653,14 +650,14 @@ export default function ProUserPanel() {
                           className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors text-sm font-medium flex items-center gap-1"
                           onClick={() => console.log('Edit meeting:', meeting.id)}
                         >
-                          {t('edit', 'Düzenle')} <Settings size={14} />
+                          Düzenle <Settings size={14} />
                         </button>
                         {meeting.status === 'active' && (
                           <button 
                             className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-lg hover:from-blue-700 hover:to-indigo-800 transition-colors text-sm font-medium shadow-sm flex items-center gap-1"
                             onClick={() => router.push(`/meetings/${meeting.id}`)}
                           >
-                            {t('goToMeeting', 'Toplantıya Git')} <Calendar size={14} />
+                            Toplantıya Git <Calendar size={14} />
                           </button>
                         )}
                       </div>
@@ -671,13 +668,13 @@ export default function ProUserPanel() {
             ) : (
               <div className="bg-white rounded-xl shadow-md p-8 text-center">
                 <Calendar size={60} className="mx-auto text-slate-300 mb-4" />
-                <p className="text-slate-600 mb-5 text-lg">{t('noMeetingsYet', 'Henüz toplantınız bulunmuyor.')}</p>
+                <p className="text-slate-600 mb-5 text-lg">Henüz toplantınız bulunmuyor.</p>
                 <button 
                   className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-lg hover:from-blue-700 hover:to-indigo-800 transition-colors shadow-sm inline-flex items-center gap-2"
                   onClick={() => setActiveTab('create-meeting')}
                 >
                   <Plus size={18} />
-                  {t('createNewMeeting', 'Yeni Toplantı Oluştur')}
+                  Yeni Toplantı Oluştur
                 </button>
               </div>
             )}
@@ -690,7 +687,7 @@ export default function ProUserPanel() {
             <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
               <Settings size={30} className="text-slate-400" />
             </div>
-            <p className="text-slate-600">{t('sectionComingSoon', 'Bu bölüm yakında kullanıma açılacak.')}</p>
+            <p className="text-slate-600">Bu bölüm yakında kullanıma açılacak.</p>
           </div>
         );
     }
@@ -719,7 +716,6 @@ interface CreateMeetingFormProps {
 }
 
 function CreateMeetingForm({ userId, userProfile, setActiveTab }: CreateMeetingFormProps) {
-  const { t } = useTranslation();
   const toast = useToast();
   
   // Form State
@@ -800,13 +796,13 @@ function CreateMeetingForm({ userId, userProfile, setActiveTab }: CreateMeetingF
       
       // Form validasyonu
       if (!formData.title.trim()) {
-        const errorMsg = t('titleRequired', 'Başlık alanı zorunludur.');
+        const errorMsg = 'Başlık alanı zorunludur.';
         toast.error(errorMsg);
         throw new Error(errorMsg);
       }
       
       if (!formData.date || !formData.time) {
-        const errorMsg = t('dateTimeRequired', 'Tarih ve saat seçimi zorunludur.');
+        const errorMsg = 'Tarih ve saat seçimi zorunludur.';
         toast.error(errorMsg);
         throw new Error(errorMsg);
       }
@@ -821,14 +817,14 @@ function CreateMeetingForm({ userId, userProfile, setActiveTab }: CreateMeetingF
       // Geçerli zamanla karşılaştır
       const now = new Date();
       if (meetingDateTime < now) {
-        const errorMsg = t('futureDateRequired', 'Toplantı tarihi gelecekte olmalıdır.');
+        const errorMsg = 'Toplantı tarihi gelecekte olmalıdır.';
         toast.error(errorMsg);
         throw new Error(errorMsg);
       }
       
       // Katılımcı sayısı doğrulama
       if (formData.participantCount < 3 || formData.participantCount > 6) {
-        const errorMsg = t('participantCountError', 'Katılımcı sayısı 3 ile 6 arasında olmalıdır.');
+        const errorMsg = 'Katılımcı sayısı 3 ile 6 arasında olmalıdır.';
         toast.error(errorMsg);
         throw new Error(errorMsg);
       }
@@ -874,7 +870,7 @@ function CreateMeetingForm({ userId, userProfile, setActiveTab }: CreateMeetingF
           console.log('Toplantı oluşturuldu, ID:', meetingRef.id);
           
           // Başarılı mesajı göster
-          const successMsg = t('meetingCreateSuccess', 'Toplantı başarıyla oluşturuldu!');
+          const successMsg = 'Toplantı başarıyla oluşturuldu!';
           toast.success(successMsg);
           
           setFormData({
@@ -899,7 +895,7 @@ function CreateMeetingForm({ userId, userProfile, setActiveTab }: CreateMeetingF
         }
       } catch (error: unknown) {
         console.error('Toplantı oluşturulurken hata:', error);
-        const errorMsg = error instanceof Error ? error.message : t('meetingCreateError', 'Toplantı oluşturulurken bir hata oluştu.');
+        const errorMsg = error instanceof Error ? error.message : 'Toplantı oluşturulurken bir hata oluştu.';
         toast.error(errorMsg);
         
         setFormData(prev => ({ 
@@ -910,7 +906,7 @@ function CreateMeetingForm({ userId, userProfile, setActiveTab }: CreateMeetingF
       }
     } catch (error: unknown) {
       console.error('Toplantı oluşturulurken hata:', error);
-      const errorMsg = error instanceof Error ? error.message : t('meetingCreateError', 'Toplantı oluşturulurken bir hata oluştu.');
+      const errorMsg = error instanceof Error ? error.message : 'Toplantı oluşturulurken bir hata oluştu.';
       
       setFormData(prev => ({ 
         ...prev, 
@@ -922,26 +918,26 @@ function CreateMeetingForm({ userId, userProfile, setActiveTab }: CreateMeetingF
   
   // Konu seçenekleri
   const topicOptions = [
-    { value: 'daily', label: t('dailyConversation', 'Günlük Konuşma') },
-    { value: 'business', label: t('business', 'İş Dünyası') },
-    { value: 'education', label: t('education', 'Eğitim/Okul') },
-    { value: 'science', label: t('science', 'Bilim') },
-    { value: 'technology', label: t('technology', 'Teknoloji') },
-    { value: 'arts', label: t('arts', 'Sanat ve Kültür') },
-    { value: 'travel', label: t('travel', 'Seyahat') },
-    { value: 'food', label: t('food', 'Yemek ve Mutfak') },
-    { value: 'sports', label: t('sports', 'Spor') },
-    { value: 'health', label: t('health', 'Sağlık ve Wellness') },
-    { value: 'environment', label: t('environment', 'Çevre') },
-    { value: 'entertainment', label: t('entertainment', 'Eğlence ve Hobiler') },
+    { value: 'daily', label: 'Günlük Konuşma' },
+    { value: 'business', label: 'İş Dünyası' },
+    { value: 'education', label: 'Eğitim/Okul' },
+    { value: 'science', label: 'Bilim' },
+    { value: 'technology', label: 'Teknoloji' },
+    { value: 'arts', label: 'Sanat ve Kültür' },
+    { value: 'travel', label: 'Seyahat' },
+    { value: 'food', label: 'Yemek ve Mutfak' },
+    { value: 'sports', label: 'Spor' },
+    { value: 'health', label: 'Sağlık ve Wellness' },
+    { value: 'environment', label: 'Çevre' },
+    { value: 'entertainment', label: 'Eğlence ve Hobiler' },
   ];
   
   // Seviye seçenekleri
   const levelOptions = [
-    { value: 'beginner', label: t('beginnerLevel', 'Başlangıç Seviyesi') },
-    { value: 'intermediate', label: t('intermediateLevel', 'Orta Seviye') },
-    { value: 'advanced', label: t('advancedLevel', 'İleri Seviye') },
-    { value: 'any', label: t('anyLevel', 'Tüm Seviyeler') },
+    { value: 'beginner', label: 'Başlangıç Seviyesi' },
+    { value: 'intermediate', label: 'Orta Seviye' },
+    { value: 'advanced', label: 'İleri Seviye' },
+    { value: 'any', label: 'Tüm Seviyeler' },
   ];
   
   return (
@@ -950,9 +946,9 @@ function CreateMeetingForm({ userId, userProfile, setActiveTab }: CreateMeetingF
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl shadow-md p-6 text-white">
         <h2 className="text-xl font-semibold mb-1 flex items-center gap-2">
           <MessageCircle size={20} />
-          {t('createMeeting', 'Toplantı Oluştur')}
+          Toplantı Oluştur
         </h2>
-        <p className="text-white/80">{t('createMeetingDescription', 'Yeni bir İngilizce pratik toplantısı oluşturun ve konuşma sunucusu olarak katılımcılara yardımcı olun.')}</p>
+        <p className="text-white/80">Yeni bir İngilizce pratik toplantısı oluşturun ve konuşma sunucusu olarak katılımcılara yardımcı olun.</p>
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -960,7 +956,7 @@ function CreateMeetingForm({ userId, userProfile, setActiveTab }: CreateMeetingF
         <div className="grid md:grid-cols-2 gap-6">
           <div>
             <label htmlFor="title" className="block text-sm font-medium text-slate-700 mb-2">
-              {t('meetingTitle', 'Toplantı Başlığı')} *
+              Toplantı Başlığı *
             </label>
             <input
               type="text"
@@ -969,13 +965,13 @@ function CreateMeetingForm({ userId, userProfile, setActiveTab }: CreateMeetingF
               value={formData.title}
               onChange={handleChange}
               className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              placeholder={t('meetingTitlePlaceholder', 'Örn: Günlük Konuşma Pratiği')}
+              placeholder="Örn: Günlük Konuşma Pratiği"
               required
             />
           </div>
           <div>
             <label htmlFor="description" className="block text-sm font-medium text-slate-700 mb-2">
-              {t('meetingDescription', 'Toplantı Açıklaması')}
+              Toplantı Açıklaması
             </label>
             <textarea
               id="description"
@@ -984,7 +980,7 @@ function CreateMeetingForm({ userId, userProfile, setActiveTab }: CreateMeetingF
               onChange={handleChange}
               rows={3}
               className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              placeholder={t('meetingDescriptionPlaceholder', 'Bu toplantıda neler konuşulacak?')}
+              placeholder="Bu toplantıda neler konuşulacak?"
             />
           </div>
         </div>
@@ -994,7 +990,7 @@ function CreateMeetingForm({ userId, userProfile, setActiveTab }: CreateMeetingF
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="date" className="block text-sm font-medium text-slate-700 mb-2">
-                {t('meetingDate', 'Toplantı Tarihi')} *
+                Toplantı Tarihi *
               </label>
               <input
                 type="date"
@@ -1009,7 +1005,7 @@ function CreateMeetingForm({ userId, userProfile, setActiveTab }: CreateMeetingF
             </div>
             <div>
               <label htmlFor="time" className="block text-sm font-medium text-slate-700 mb-2">
-                {t('meetingTime', 'Toplantı Saati')} *
+                Toplantı Saati *
               </label>
               <input
                 type="time"
@@ -1025,7 +1021,7 @@ function CreateMeetingForm({ userId, userProfile, setActiveTab }: CreateMeetingF
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="level" className="block text-sm font-medium text-slate-700 mb-2">
-                {t('level', 'Seviye')}
+                Seviye
               </label>
               <select
                 id="level"
@@ -1043,7 +1039,7 @@ function CreateMeetingForm({ userId, userProfile, setActiveTab }: CreateMeetingF
             </div>
             <div>
               <label htmlFor="topic" className="block text-sm font-medium text-slate-700 mb-2">
-                {t('topic', 'Konu')}
+                Konu
               </label>
               <select
                 id="topic"
@@ -1066,7 +1062,7 @@ function CreateMeetingForm({ userId, userProfile, setActiveTab }: CreateMeetingF
         <div className="grid md:grid-cols-2 gap-6">
           <div className="bg-slate-50 p-5 rounded-lg border border-slate-200">
             <label htmlFor="participantCount" className="block text-sm font-medium text-slate-700 mb-3 flex items-center justify-between">
-              <span>{t('participantCount', 'Katılımcı Sayısı')}</span>
+              <span>Katılımcı Sayısı</span>
               <span className="text-lg font-medium text-blue-700 px-3 py-1 bg-blue-100 rounded-full">
                 {formData.participantCount}
               </span>
@@ -1083,14 +1079,14 @@ function CreateMeetingForm({ userId, userProfile, setActiveTab }: CreateMeetingF
                 className="w-full accent-blue-600"
               />
             </div>
-            <p className="text-xs text-slate-500 mt-2">{t('participantCountHelp', 'Toplantıya katılabilecek kişi sayısı (3-6 arası)')}</p>
+            <p className="text-xs text-slate-500 mt-2">Toplantıya katılabilecek kişi sayısı (3-6 arası)</p>
           </div>
         </div>
         
         {/* Anahtar Kelimeler */}
         <div className="bg-slate-50 p-5 rounded-lg border border-slate-200">
           <label className="block text-sm font-medium text-slate-700 mb-3">
-            {t('keywords', 'Anahtar Kelimeler')}
+            Anahtar Kelimeler
           </label>
           <div className="flex gap-2 mb-3">
             <input
@@ -1099,7 +1095,7 @@ function CreateMeetingForm({ userId, userProfile, setActiveTab }: CreateMeetingF
               onChange={(e) => setCurrentKeyword(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addKeyword())}
               className="flex-1 px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              placeholder={t('keywordPlaceholder', 'Yeni anahtar kelime ekle')}
+              placeholder="Yeni anahtar kelime ekle"
             />
             <button
               type="button"
@@ -1133,7 +1129,7 @@ function CreateMeetingForm({ userId, userProfile, setActiveTab }: CreateMeetingF
         {/* Konu Soruları */}
         <div className="bg-slate-50 p-5 rounded-lg border border-slate-200">
           <label className="block text-sm font-medium text-slate-700 mb-3">
-            {t('topicQuestions', 'Konu Soruları')}
+            Konu Soruları
           </label>
           <div className="flex gap-2 mb-3">
             <input
@@ -1142,7 +1138,7 @@ function CreateMeetingForm({ userId, userProfile, setActiveTab }: CreateMeetingF
               onChange={(e) => setCurrentQuestion(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addQuestion())}
               className="flex-1 px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              placeholder={t('questionPlaceholder', 'Toplantıda sorulacak bir soru ekle')}
+              placeholder="Toplantıda sorulacak bir soru ekle"
             />
             <button
               type="button"
@@ -1208,12 +1204,12 @@ function CreateMeetingForm({ userId, userProfile, setActiveTab }: CreateMeetingF
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                {t('creating', 'Oluşturuluyor...')}
+                Oluşturuluyor...
               </>
             ) : (
               <>
                 <Calendar size={18} />
-                {t('createMeeting', 'Toplantı Oluştur')}
+                Toplantı Oluştur
               </>
             )}
           </button>

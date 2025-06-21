@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/context/AuthContext';
 import { collection, query, getDocs, doc, getDoc, where, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
-import { BookOpen, Users, Clock, ChevronRight, Search, Filter } from 'lucide-react';
 
 interface WordGroup {
   id: string;
@@ -179,10 +178,10 @@ export default function VocabularyPage() {
 
   const getLevelColor = (level: string) => {
     switch (level) {
-      case 'beginner': return 'bg-emerald-100 text-emerald-700';
-      case 'intermediate': return 'bg-yellow-100 text-yellow-700';
-      case 'advanced': return 'bg-red-100 text-red-700';
-      default: return 'bg-gray-100 text-gray-700';
+      case 'beginner': return 'bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-700 border-emerald-200';
+      case 'intermediate': return 'bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-700 border-yellow-200';
+      case 'advanced': return 'bg-gradient-to-r from-red-100 to-pink-100 text-red-700 border-red-200';
+      default: return 'bg-gradient-to-r from-gray-100 to-slate-100 text-gray-700 border-gray-200';
     }
   };
 
@@ -212,199 +211,398 @@ export default function VocabularyPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-8 h-8 border-4 border-t-blue-500 border-blue-200 rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50 flex items-center justify-center">
+        <div className="relative">
+          <div className="w-16 h-16 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div>
+          <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-blue-600 rounded-full animate-spin" style={{ animationDelay: '0.5s' }}></div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-slate-100 p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50 py-10 px-4">
       <div className="max-w-7xl mx-auto">
-        {/* Filtre ve arama alanı */}
-        <div className="mb-6">
-          <div className="bg-white rounded-xl shadow flex flex-col md:flex-row items-center gap-4 px-6 py-4">
-            <div className="flex items-center w-full md:w-auto gap-2">
-              <Search className="w-5 h-5 text-slate-400" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                placeholder="Kelime grubu ara..."
-                className="px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-400 w-full md:w-64"
-              />
+        {/* Header Section */}
+        <div className="relative mb-8">
+          {/* Background decorative elements */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute top-10 left-10 w-72 h-72 bg-gradient-to-br from-emerald-200 to-transparent rounded-full opacity-20 animate-pulse"></div>
+            <div className="absolute bottom-10 right-10 w-72 h-72 bg-gradient-to-tl from-blue-200 to-transparent rounded-full opacity-20 animate-pulse delay-500"></div>
+          </div>
+          
+          <div className="relative text-center">
+            <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-emerald-100 to-blue-100 rounded-full text-emerald-700 text-sm font-medium mb-4">
+              <span className="w-2 h-2 bg-emerald-500 rounded-full mr-2 animate-pulse"></span>
+              Kelime Yönetimi
             </div>
-            <div className="flex items-center gap-2 w-full md:w-auto">
-              <input
-                type="checkbox"
-                checked={showOnlyDue}
-                onChange={e => setShowOnlyDue(e.target.checked)}
-                id="showOnlyDue"
-                className="accent-purple-600 w-5 h-5 rounded focus:ring-2 focus:ring-purple-400 border-slate-300"
-              />
-              <label htmlFor="showOnlyDue" className="text-sm select-none cursor-pointer">
-                Sadece tekrar zamanı gelen gruplar
-              </label>
-            </div>
-            <div className="flex items-center gap-2 w-full md:w-auto">
-              <Filter className="w-5 h-5 text-slate-400" />
-              <select
-                value={sortBy}
-                onChange={e => setSortBy(e.target.value as any)}
-                className="px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
-              >
-                <option value="due">En çok tekrar zamanı gelen</option>
-                <option value="wordCount">En çok kelime</option>
-                <option value="az">A-Z</option>
-              </select>
-            </div>
+            <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-800 via-emerald-600 to-blue-600 mb-4">
+              Kelime Grupları
+            </h1>
+            <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
+              Kelime gruplarını keşfet, öğren ve tekrar et. İngilizce kelime hazneni geliştir
+            </p>
           </div>
         </div>
-        {/* İstatistik kutuları */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-          <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center">
-            <span className="text-2xl font-bold text-purple-700 mb-1">{totalLearnedWords}</span>
-            <span className="text-slate-600 text-sm">Öğrenilen Kelime</span>
-          </div>
-          <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center">
-            <span className="text-2xl font-bold text-yellow-700 mb-1">{totalDueWords}</span>
-            <span className="text-slate-600 text-sm">Tekrar Zamanı Gelen</span>
-          </div>
-          <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center">
-            <span className="text-2xl font-bold text-emerald-700 mb-1">{totalReviews}</span>
-            <span className="text-slate-600 text-sm">Toplam Tekrar</span>
-          </div>
-          <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center">
-            <span className="text-2xl font-bold text-blue-700 mb-1">{totalReviews > 0 ? Math.round((totalCorrectReviews / totalReviews) * 100) : 0}%</span>
-            <span className="text-slate-600 text-sm">Başarı Oranı</span>
-          </div>
-        </div>
-        {/* Streak ve rozet kutuları */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div className="bg-orange-100 border border-orange-300 text-orange-800 rounded-lg px-6 py-4 flex flex-col items-center">
-            <span className="font-semibold text-lg">Seri</span>
-            <span className="text-2xl font-bold">{streak} gün</span>
-            {lastReviewDate && <span className="text-xs text-orange-600">Son tekrar: {lastReviewDate}</span>}
-          </div>
-          <div className="bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-lg px-6 py-4 flex flex-col items-center">
-            <span className="font-semibold text-lg">Rozetler</span>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {badges.length === 0 && <span className="text-xs text-emerald-600">Henüz rozet yok</span>}
-              {badges.map((badge, i) => (
-                <span key={i} className="bg-emerald-200 text-emerald-800 px-3 py-1 rounded-full text-xs font-semibold">{badge}</span>
-              ))}
-            </div>
-          </div>
-        </div>
-        {/* Günlük hedef kutusu */}
-        <div className="mb-6">
-          <div className="bg-blue-100 border border-blue-300 text-blue-800 rounded-lg px-6 py-4 flex flex-col md:flex-row items-center gap-3">
-            <span className="font-semibold">Günlük Hedef:</span>
-            <span className="text-lg font-bold">{DAILY_GOAL} tekrar</span>
-            <div className="flex-1 w-full md:w-auto">
-              <div className="h-3 bg-blue-200 rounded-full overflow-hidden mt-2 md:mt-0">
-                <div
-                  className="h-full bg-blue-500 rounded-full transition-all duration-300"
-                  style={{ width: `${Math.min(100, Math.round((todayReviews / DAILY_GOAL) * 100))}%` }}
-                ></div>
+
+        {/* Search and Filter Section */}
+        <div className="group relative mb-8">
+          <div className="absolute inset-0 bg-gradient-to-br from-white to-slate-50 rounded-3xl transform group-hover:scale-105 transition-all duration-500 ease-out"></div>
+          <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-6 border border-slate-100/50 hover:shadow-3xl transition-all duration-500 ease-out">
+            <div className="flex flex-col lg:flex-row items-center gap-4">
+              <div className="flex items-center w-full lg:w-auto gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-blue-500 rounded-xl flex items-center justify-center">
+                  <span className="text-white font-bold">🔍</span>
+                </div>
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  placeholder="Kelime grubu ara..."
+                  className="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent w-full lg:w-80 transition-all duration-300"
+                />
+              </div>
+              
+              <div className="flex items-center gap-3 w-full lg:w-auto">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={showOnlyDue}
+                    onChange={e => setShowOnlyDue(e.target.checked)}
+                    className="w-5 h-5 accent-emerald-600 rounded focus:ring-2 focus:ring-emerald-400 border-slate-300"
+                  />
+                  <span className="text-sm font-medium text-slate-700">Sadece tekrar zamanı gelen</span>
+                </label>
+              </div>
+              
+              <div className="flex items-center gap-3 w-full lg:w-auto">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
+                  <span className="text-white font-bold">📊</span>
+                </div>
+                <select
+                  value={sortBy}
+                  onChange={e => setSortBy(e.target.value as any)}
+                  className="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300"
+                >
+                  <option value="due">En çok tekrar zamanı gelen</option>
+                  <option value="wordCount">En çok kelime</option>
+                  <option value="az">A-Z</option>
+                </select>
               </div>
             </div>
-            <span className="ml-2">{todayReviews} / {DAILY_GOAL}</span>
+          </div>
+        </div>
+
+        {/* Stats Overview Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="group relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl transform group-hover:scale-105 transition-all duration-500 ease-out"></div>
+            <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-6 border border-emerald-100/50 hover:shadow-3xl transition-all duration-500 ease-out transform group-hover:-translate-y-2">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">📚</span>
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1 text-emerald-600 text-sm">
+                    <span>↗</span>
+                    <span>+15%</span>
+                  </div>
+                  <span className="text-slate-500 text-xs">Bu hafta</span>
+                </div>
+              </div>
+              <h3 className="text-3xl font-bold text-emerald-700 mb-2">
+                {totalLearnedWords}
+              </h3>
+              <p className="text-emerald-600 font-medium">Öğrenilen Kelime</p>
+              <div className="mt-4 w-full bg-emerald-100 rounded-full h-2">
+                <div className="bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full transition-all duration-1000 ease-out" style={{ width: `${Math.min((totalLearnedWords / 100) * 100, 100)}%` }}></div>
+              </div>
+            </div>
+          </div>
+
+          <div className="group relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-3xl transform group-hover:scale-105 transition-all duration-500 ease-out"></div>
+            <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-6 border border-yellow-100/50 hover:shadow-3xl transition-all duration-500 ease-out transform group-hover:-translate-y-2">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">⏰</span>
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1 text-yellow-600 text-sm">
+                    <span>↗</span>
+                    <span>+8%</span>
+                  </div>
+                  <span className="text-slate-500 text-xs">Bu hafta</span>
+                </div>
+              </div>
+              <h3 className="text-3xl font-bold text-yellow-700 mb-2">
+                {totalDueWords}
+              </h3>
+              <p className="text-yellow-600 font-medium">Tekrar Zamanı Gelen</p>
+              <div className="mt-4 w-full bg-yellow-100 rounded-full h-2">
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 h-2 rounded-full transition-all duration-1000 ease-out" style={{ width: `${Math.min((totalDueWords / 50) * 100, 100)}%` }}></div>
+              </div>
+            </div>
+          </div>
+
+          <div className="group relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl transform group-hover:scale-105 transition-all duration-500 ease-out"></div>
+            <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-6 border border-blue-100/50 hover:shadow-3xl transition-all duration-500 ease-out transform group-hover:-translate-y-2">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">🔄</span>
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1 text-blue-600 text-sm">
+                    <span>↗</span>
+                    <span>+12%</span>
+                  </div>
+                  <span className="text-slate-500 text-xs">Bu hafta</span>
+                </div>
+              </div>
+              <h3 className="text-3xl font-bold text-blue-700 mb-2">
+                {totalReviews}
+              </h3>
+              <p className="text-blue-600 font-medium">Toplam Tekrar</p>
+              <div className="mt-4 w-full bg-blue-100 rounded-full h-2">
+                <div className="bg-gradient-to-r from-blue-500 to-indigo-500 h-2 rounded-full transition-all duration-1000 ease-out" style={{ width: `${Math.min((totalReviews / 500) * 100, 100)}%` }}></div>
+              </div>
+            </div>
+          </div>
+
+          <div className="group relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-pink-50 rounded-3xl transform group-hover:scale-105 transition-all duration-500 ease-out"></div>
+            <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-6 border border-purple-100/50 hover:shadow-3xl transition-all duration-500 ease-out transform group-hover:-translate-y-2">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">🎯</span>
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1 text-purple-600 text-sm">
+                    <span>↗</span>
+                    <span>+5%</span>
+                  </div>
+                  <span className="text-slate-500 text-xs">Bu hafta</span>
+                </div>
+              </div>
+              <h3 className="text-3xl font-bold text-purple-700 mb-2">
+                {totalReviews > 0 ? Math.round((totalCorrectReviews / totalReviews) * 100) : 0}%
+              </h3>
+              <p className="text-purple-600 font-medium">Başarı Oranı</p>
+              <div className="mt-4 w-full bg-purple-100 rounded-full h-2">
+                <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-1000 ease-out" style={{ width: `${totalReviews > 0 ? Math.round((totalCorrectReviews / totalReviews) * 100) : 0}%` }}></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Streak and Badges Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="group relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-red-50 rounded-3xl transform group-hover:scale-105 transition-all duration-500 ease-out"></div>
+            <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-6 border border-orange-100/50 hover:shadow-3xl transition-all duration-500 ease-out">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">🔥</span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-orange-700">Günlük Seri</h3>
+                  <p className="text-orange-600 text-sm">Kesintisiz öğrenme</p>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl font-bold text-orange-700 mb-2">{streak}</div>
+                <p className="text-orange-600 font-medium">gün</p>
+                {lastReviewDate && (
+                  <p className="text-xs text-orange-500 mt-2">Son tekrar: {lastReviewDate}</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="group relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl transform group-hover:scale-105 transition-all duration-500 ease-out"></div>
+            <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-6 border border-emerald-100/50 hover:shadow-3xl transition-all duration-500 ease-out">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">🏆</span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-emerald-700">Rozetler</h3>
+                  <p className="text-emerald-600 text-sm">Başarılarını kutla</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {badges.length === 0 ? (
+                  <div className="text-center w-full py-4">
+                    <span className="text-emerald-600 text-sm">Henüz rozet yok</span>
+                    <p className="text-emerald-500 text-xs mt-1">Daha fazla çalışarak rozetler kazan</p>
+                  </div>
+                ) : (
+                  badges.map((badge, i) => (
+                    <span key={i} className="bg-gradient-to-r from-emerald-200 to-teal-200 text-emerald-800 px-3 py-2 rounded-xl text-xs font-semibold border border-emerald-300">
+                      {badge}
+                    </span>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Daily Goal Section */}
+        <div className="group relative mb-8">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl transform group-hover:scale-105 transition-all duration-500 ease-out"></div>
+          <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-6 border border-blue-100/50 hover:shadow-3xl transition-all duration-500 ease-out">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">🎯</span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-blue-700">Günlük Hedef</h3>
+                  <p className="text-blue-600 text-sm">{DAILY_GOAL} tekrar tamamla</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-blue-700">{todayReviews} / {DAILY_GOAL}</div>
+                <div className="w-32 h-3 bg-blue-100 rounded-full overflow-hidden mt-2">
+                  <div
+                    className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all duration-1000 ease-out"
+                    style={{ width: `${Math.min(100, Math.round((todayReviews / DAILY_GOAL) * 100))}%` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
             {todayReviews >= DAILY_GOAL && (
-              <span className="ml-4 text-emerald-700 font-bold">Tebrikler! Hedefini tamamladın 🎉</span>
+              <div className="mt-4 p-4 bg-gradient-to-r from-emerald-100 to-teal-100 rounded-2xl border border-emerald-200">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">🎉</span>
+                  <div>
+                    <p className="text-emerald-700 font-bold">Tebrikler!</p>
+                    <p className="text-emerald-600 text-sm">Günlük hedefini tamamladın</p>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         </div>
-        {/* Günlük hedef tamamlandığında tebrik kutusu/animasyonu */}
-        {showCongratsModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl shadow-lg p-10 text-center max-w-md mx-auto animate-bounce">
-              <div className="text-5xl mb-4">🎉</div>
-              <h2 className="text-2xl font-bold text-slate-800 mb-2">Tebrikler!</h2>
-              <p className="text-slate-600 mb-6">Günlük hedefini tamamladın veya yeni bir rozet kazandın!</p>
-              <button
-                onClick={() => setShowCongratsModal(false)}
-                className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-              >
-                Kapat
-              </button>
-            </div>
-          </div>
-        )}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-          <div className="flex items-center gap-3">
-            <span className="bg-purple-100 p-2 rounded-lg">
-              <BookOpen className="w-6 h-6 text-purple-600" />
-            </span>
-            <h1 className="text-2xl font-bold text-slate-800">Kelime Grupları</h1>
-          </div>
-        </div>
-        
+
+        {/* Word Groups Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredGroups.map((group) => (
             <div 
               key={group.id}
-              className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
+              className="group relative cursor-pointer"
               onClick={() => router.push(`/student-panel/vocabulary/groups/${group.id}`)}
             >
-              <div className="p-6">
+              <div className="absolute inset-0 bg-gradient-to-br from-white to-slate-50 rounded-3xl transform group-hover:scale-105 transition-all duration-500 ease-out"></div>
+              <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-6 border border-slate-100/50 hover:shadow-3xl transition-all duration-500 ease-out transform group-hover:-translate-y-2">
                 <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-800 mb-1">{group.title}</h3>
-                    <p className="text-sm text-slate-600 line-clamp-2">{group.description}</p>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-slate-800 mb-2">{group.title}</h3>
+                    <p className="text-slate-600 text-sm line-clamp-2 mb-3">{group.description}</p>
                   </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getLevelColor(group.level)}`}>
+                  <span className={`px-3 py-1 rounded-xl text-xs font-semibold border ${getLevelColor(group.level)}`}>
                     {getLevelText(group.level)}
                   </span>
                 </div>
+                
                 {dueWordsByGroup[group.id] > 0 && (
-                  <div className="mb-2">
-                    <span className="inline-block bg-yellow-200 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full">
-                      {dueWordsByGroup[group.id]} tekrar zamanı gelen kelime
+                  <div className="mb-4">
+                    <span className="inline-block bg-gradient-to-r from-yellow-200 to-orange-200 text-yellow-800 text-xs font-semibold px-3 py-2 rounded-xl border border-yellow-300">
+                      ⏰ {dueWordsByGroup[group.id]} tekrar zamanı gelen kelime
                     </span>
                   </div>
                 )}
-                <div className="space-y-3">
+                
+                <div className="space-y-4">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-600 flex items-center gap-1">
-                      <Users className="w-4 h-4" />
+                    <span className="text-slate-600 flex items-center gap-2">
+                      <span className="w-6 h-6 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center">
+                        <span className="text-blue-600 text-xs">📚</span>
+                      </span>
                       {group.wordCount} Kelime
                     </span>
                     {group.lastStudied && (
-                      <span className="text-slate-500 flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
-                        {new Date(group.lastStudied).toLocaleDateString()}
-                    </span>
-                  )}
+                      <span className="text-slate-500 flex items-center gap-2">
+                        <span className="w-6 h-6 bg-gradient-to-br from-slate-100 to-gray-100 rounded-lg flex items-center justify-center">
+                          <span className="text-slate-600 text-xs">🕒</span>
+                        </span>
+                        {new Date(group.lastStudied).toLocaleDateString('tr-TR')}
+                      </span>
+                    )}
                   </div>
                   
-                  <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-purple-500 rounded-full transition-all duration-300"
-                      style={{ width: `${group.progress || 0}%` }}
-                    ></div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-slate-600 font-medium">İlerleme</span>
+                      <span className="text-slate-700 font-bold">{group.progress || 0}%</span>
+                    </div>
+                    <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full transition-all duration-1000 ease-out"
+                        style={{ width: `${group.progress || 0}%` }}
+                      ></div>
+                    </div>
                   </div>
                   
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-600">
-                      İlerleme: {group.progress || 0}%
+                  <div className="flex items-center justify-between pt-2">
+                    <span className="text-emerald-600 font-medium text-sm">Grubu aç</span>
+                    <span className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-blue-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <span className="text-white text-sm">→</span>
                     </span>
-                    <ChevronRight className="w-5 h-5 text-slate-400" />
                   </div>
                 </div>
               </div>
-          </div>
+            </div>
           ))}
         </div>
         
         {wordGroups.length === 0 && (
-          <div className="text-center py-12">
-            <div className="bg-white rounded-xl shadow-lg p-8 max-w-md mx-auto">
-              <BookOpen className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-slate-800 mb-2">Henüz kelime grubu yok</h3>
-              <p className="text-slate-600 mb-4">Yeni kelime grupları eklendiğinde burada görünecek.</p>
+          <div className="text-center py-16">
+            <div className="group relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-white to-slate-50 rounded-3xl transform group-hover:scale-105 transition-all duration-500 ease-out"></div>
+              <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-12 border border-slate-100/50 hover:shadow-3xl transition-all duration-500 ease-out">
+                <div className="w-20 h-20 bg-gradient-to-br from-slate-100 to-gray-100 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                  <span className="text-3xl">📚</span>
+                </div>
+                <h3 className="text-2xl font-bold text-slate-800 mb-3">Henüz kelime grubu yok</h3>
+                <p className="text-slate-600 mb-6 max-w-md mx-auto">
+                  Yeni kelime grupları eklendiğinde burada görünecek. Şimdilik diğer özellikleri keşfetmeye devam et.
+                </p>
+                <div className="w-16 h-16 bg-gradient-to-br from-emerald-100 to-blue-100 rounded-2xl flex items-center justify-center mx-auto">
+                  <span className="text-2xl">✨</span>
+                </div>
+              </div>
             </div>
-        </div>
+          </div>
+        )}
+
+        {/* Congratulations Modal */}
+        {showCongratsModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="group relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-blue-50 rounded-3xl transform group-hover:scale-105 transition-all duration-500 ease-out"></div>
+              <div className="relative bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-10 border border-emerald-100/50 hover:shadow-3xl transition-all duration-500 ease-out max-w-md mx-auto animate-bounce">
+                <div className="text-center">
+                  <div className="text-6xl mb-6">🎉</div>
+                  <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-blue-600 mb-4">
+                    Tebrikler!
+                  </h2>
+                  <p className="text-slate-600 mb-8 text-lg">
+                    Günlük hedefini tamamladın veya yeni bir rozet kazandın!
+                  </p>
+                  <button
+                    onClick={() => setShowCongratsModal(false)}
+                    className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-blue-500 text-white rounded-2xl font-semibold hover:from-emerald-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-105"
+                  >
+                    Harika! 🚀
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
